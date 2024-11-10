@@ -22,7 +22,7 @@ void *handle_client(void *client_socket) {
     char buffer[BUFFER_SIZE];
     int read_size;
 
-    if ((read_size = recv(sock, buffer, BUFFER_SIZE, 0)) > 0) {
+    while ((read_size = recv(sock, buffer, BUFFER_SIZE, 0)) > 0) {
         buffer[read_size] = '\0'; 
 
         const char *header = "RESPONSE_HEADER";
