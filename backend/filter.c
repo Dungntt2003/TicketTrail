@@ -11,6 +11,7 @@ typedef struct {
     char returnDate[MAX_STRING_LENGTH];
     int passengers;
     char seatClass[MAX_STRING_LENGTH];
+    float price;
 } Flight;
 
 void filterFlights(Flight flights[], int flightCount, const char *departure,
@@ -42,19 +43,19 @@ void filterFlights(Flight flights[], int flightCount, const char *departure,
 
         // Nếu tất cả các điều kiện đều thỏa mãn, in thông tin chuyến bay
         if (matches) {
-            printf("Flight from %s to %s on %s returning on %s with %d passengers in %s class\n",
+            printf("Flight from %s to %s on %s returning on %s with %d passengers in %s class, Price: %.2f\n",
                    flight.departure, flight.destination, flight.departureDate, flight.returnDate,
-                   flight.passengers, flight.seatClass);
+                   flight.passengers, flight.seatClass, flight.price);
         }
     }
 }
 
 int main() {
     Flight flights[MAX_FLIGHTS] = {
-        {"Hanoi", "Ho Chi Minh", "2023-12-01", "2023-12-10", 2, "Economy"},
-        {"Hanoi", "Da Nang", "2023-12-05", "2023-12-12", 1, "Business"},
-        {"Hanoi", "Ho Chi Minh", "2023-12-02", "2023-12-09", 3, "Economy"},
-        {"Hanoi", "Nha Trang", "2023-12-03", "2023-12-08", 1, "First"}
+        {"Hanoi", "Ho Chi Minh", "2023-12-01", "2023-12-10", 2, "Economy", 100.50},
+        {"Hanoi", "Da Nang", "2023-12-05", "2023-12-12", 1, "Business", 150.75},
+        {"Hanoi", "Ho Chi Minh", "2023-12-02", "2023-12-09", 3, "Economy", 90.00},
+        {"Hanoi", "Nha Trang", "2023-12-03", "2023-12-08", 1, "First", 200.00}
     };
 
     int flightCount = 4;
