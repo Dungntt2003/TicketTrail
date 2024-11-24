@@ -1,12 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "auth.h"
+#include "filter.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
+
+  Flight flights[MAX_FLIGHTS] = {
+        {"Hanoi", "Ho Chi Minh", "2023-12-01", 2, "Economy", 100.50},
+        {"Hanoi", "Da Nang", "2023-12-05", 1, "Business", 150.75},
+        {"Hanoi", "Ho Chi Minh", "2023-12-02", 3, "Economy", 90.00},
+        {"Hanoi", "Nha Trang", "2023-12-03", 1, "First", 200.00}
+    };
+
+    int flightCount = 4;
+
+
 
 int calculate_checksum(const char *data) {
     int checksum = 0;
@@ -17,22 +31,96 @@ int calculate_checksum(const char *data) {
 }
 
 
+char* returnMsg (char* message){
+    const char *header = "RESPONSE_HEADER";
+    int checksum = calculate_checksum(message);
+
+    char *response = (char*)malloc(BUFFER_SIZE);
+    if (response == NULL) {
+        return NULL;
+    }
+    snprintf(response, BUFFER_SIZE, "%s|%s|%d", header, message, checksum);
+    return response; 
+}
+
 void *handle_client(void *client_socket) {
+    bool is_logged_in = false;
+    int option=10;
+    char int_str[12];
+    char email[BUFFER_SIZE];
+    char name[BUFFER_SIZE];
+    char phone[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
     int sock = *(int*)client_socket;
     char buffer[BUFFER_SIZE];
     int read_size;
 
-    while ((read_size = recv(sock, buffer, BUFFER_SIZE, 0)) > 0) {
-        buffer[read_size] = '\0'; 
-
-        const char *header = "RESPONSE_HEADER";
-        int checksum = calculate_checksum(buffer);
-
-        char response[BUFFER_SIZE];
-        snprintf(response, BUFFER_SIZE, "%s|%s|%d", header, buffer, checksum);
-
-        send(sock, response, strlen(response), 0);
-        printf("Sent to client: %s\n", response);
+    while (1) {
+    recv(sock, &option, sizeof(option), 0);
+        if (!is_logged_in){
+            if (option==1){
+                recv(sock, email, sizeof(email), 0);
+                printf("Email: %s\n", email);
+                recv(sock, name, sizeof(name), 0);
+                printf("Name: %s\n", name);
+                recv(sock, phone, sizeof(phone), 0);
+                printf("Phone: %s\n", phone);
+                recv(sock, password, sizeof(password), 0);
+                printf("Address: %s\n", password);  
+                if (register_user(email, name, phone, password)){
+                    is_logged_in = true;
+                    send(sock, "Success", sizeof("Success"), 0);
+                } 
+                else send(sock, "Fail", sizeof("Fail"), 0);           
+            }
+            else if (option == 2){
+                recv(sock, email, sizeof(email), 0);
+                printf("Email: %s\n", email);
+                recv(sock, password, sizeof(password), 0);
+                printf("Password: %s\n", password);
+                if (login_user(email, password)){
+                    is_logged_in = true;
+                    send(sock, "Success", sizeof("Success"), 0);
+                }
+                else send(sock, "Fail", sizeof("Fail"), 0);  
+            } else {
+                printf("Client out\n");
+                break;
+            }
+        }
+        else {
+            Flight filterFlights[MAX_FLIGHTS];
+            char departure[BUFFER_SIZE];
+            char destination[BUFFER_SIZE];
+            char departureDate[BUFFER_SIZE];
+            char seatClass[BUFFER_SIZE];
+            send(sock, &flightCount, sizeof(flightCount), 0);
+            send(sock, flights, sizeof(Flight) * flightCount, 0);
+            if (option == 1){
+                printf("Client log out\n");
+                is_logged_in= false;
+            }
+            else if (option == 2){
+                printf("Print list flights for client\n");
+            }  else if (option == 3){
+                recv(sock, departure, sizeof(departure), 0);
+                printf("Departure: %s\n", departure);
+                recv(sock, destination, sizeof(destination), 0);
+                printf("Destination: %s\n", destination);
+                recv(sock, departureDate, sizeof(departureDate), 0);
+                printf("Departure Date: %s\n", departureDate);
+                recv(sock, seatClass, sizeof(seatClass), 0);
+                printf("Seat class: %s\n", seatClass);
+                int filterCount = filterFlight(flights, flightCount, departure, destination, departureDate, seatClass, filterFlights);
+                printf("Print list flight after filtering\n");
+                send(sock, &filterCount, sizeof(filterCount), 0);
+                send(sock, filterFlights, sizeof(Flight) * filterCount, 0);
+            }
+            else if (option == 6){
+                printf("Client out!\n");
+                break;
+            }
+        }
     }
 
     close(sock);

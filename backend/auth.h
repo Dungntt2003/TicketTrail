@@ -18,6 +18,7 @@ typedef struct {
 } User;
 
 bool register_user(const char *email, const char *name, const char *phone, const char *password);
+bool checkEmailExist (const char *email);
 bool login_user(const char *email, const char *password);
 bool validate_email(const char *email);
 bool validate_phone(const char *phone);

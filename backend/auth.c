@@ -46,10 +46,36 @@ bool validate_password(const char *password) {
     return has_upper && has_lower && has_digit;
 }
 
+bool checkEmailExist (const char *email){
+    FILE *file1 = fopen("users.txt", "r");
+    if (!file1) {
+        perror("Cann't open file\n");
+        return false;
+    }
+
+    char line[256];
+
+    while (fgets(line, sizeof(line), file1)) {
+        User user;
+        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^\n]",
+               user.email, user.name, user.phone, user.hashed_password, user.created_at);
+        if (strcmp(user.email, email) == 0) {
+            fclose(file1);
+            printf("Email has existed\n");
+            return true;
+        }
+    }
+    fclose(file1);
+    return false;
+}
+
 bool register_user(const char *email, const char *name, const char *phone, const char *password) {
+    if (checkEmailExist(email)){
+        return false;
+    }
     FILE *file = fopen("users.txt", "a");
     if (!file) {
-        perror("Không thể mở file");
+        perror("Cann't open file");
         return false;
     }
 
@@ -62,14 +88,14 @@ bool register_user(const char *email, const char *name, const char *phone, const
     fprintf(file, "%s,%s,%s,%s,%s\n", email, name, phone, hashed_password, created_at);
     fclose(file);
 
-    printf("Đăng ký thành công!\n");
+    printf("Register successfully!\n");
     return true;
 }
 
 bool login_user(const char *email, const char *password) {
     FILE *file = fopen("users.txt", "r");
     if (!file) {
-        perror("Không thể mở file");
+        perror("Cann't open file");
         return false;
     }
 
@@ -88,6 +114,6 @@ bool login_user(const char *email, const char *password) {
         }
     }
     fclose(file);
-    printf("Thông tin đăng nhập không chính xác.\n");
+    printf("Wrong login information.\n");
     return false;
 }

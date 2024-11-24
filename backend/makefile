@@ -1,21 +1,15 @@
 CC = gcc
 
-all: client server user_auth filter connect
+all: client server connect
 
-client: client.c
-	${CC} client.c -o client
+client: client.c auth.c
+	${CC} client.c auth.c filter.c -o client -lssl -lcrypto
 
 server: server.c
-	${CC} server.c -o server -lpthread
-
-user_auth: main.c auth.c
-	${CC} main.c auth.c -o user_auth -lssl -lcrypto
-
-filter: filter.c 
-	${CC} filter.c -o filter
+	${CC} server.c auth.c filter.c -o server -lpthread -lssl -lcrypto
 
 connect: connect.c
 	${CC} connect.c -o connect -lmysqlclient
 
 clean:
-	rm -f *.o server client user_auth
+	rm -f *.o server client connect
