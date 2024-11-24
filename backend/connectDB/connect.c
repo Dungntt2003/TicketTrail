@@ -5,7 +5,7 @@
 
 #define HOST "localhost"
 #define USER "root"
-#define PASS "12345678"
+#define PASS "@Nguyenminhchau983"
 #define DBNAME "ticketrail"
 #define MAX_LENGTH 255
 
@@ -15,7 +15,7 @@ typedef struct {
     char description[MAX_LENGTH];
     char contact_email[MAX_LENGTH];
     char contact_phone[MAX_LENGTH];
-    char logo_url[MAX_LENGTH]
+    char logo_url[MAX_LENGTH];
 
 } Airline;
 
@@ -30,11 +30,12 @@ int fetch_users(Airline **airline, int *count) {
         return 1;
     }
 
-    if (mysql_real_connect(conn, HOST, USER, PASS, DBNAME, 3306, NULL, 0) == NULL) {
-        fprintf(stderr, "mysql_real_connect() failed: %s\n", mysql_error(conn));
-        mysql_close(conn);
-        return 1;
-    }
+    if (!mysql_real_connect(conn, HOST, USER, PASS, DBNAME, 3306, NULL, 0)) {
+    fprintf(stderr, "mysql_real_connect() failed: %s\n", mysql_error(conn));
+    mysql_close(conn);
+    return 1;
+}
+
 
     if (mysql_query(conn, "SELECT * FROM airlines")) {
         fprintf(stderr, "SELECT failed. Error: %s\n", mysql_error(conn));
