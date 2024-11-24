@@ -5,7 +5,7 @@
 
 #define HOST "localhost"
 #define USER "root"
-#define PASS "123456"
+#define PASS "12345678"
 #define DBNAME "ticketrail"
 #define MAX_LENGTH 255
 
@@ -30,8 +30,8 @@ int fetch_users(Airline **airline, int *count) {
         return 1;
     }
 
-    if (mysql_real_connect(conn, "127.0.0.1", "root", "123456", "ticketrail", 3306, NULL, 0)) {
-         fprintf(stderr, "mysql_real_connect() failed: %s\n", mysql_error(conn));
+    if (mysql_real_connect(conn, HOST, USER, PASS, DBNAME, 3306, NULL, 0) == NULL) {
+        fprintf(stderr, "mysql_real_connect() failed: %s\n", mysql_error(conn));
         mysql_close(conn);
         return 1;
     }

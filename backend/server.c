@@ -5,8 +5,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include "auth.h"
-#include "filter.h"
+#include "./auth/auth.h"
+#include "./filter/filter.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
