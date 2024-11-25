@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     // CSS
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider,
-        "* { background-color: #1570EF; }"
+        "* { background-color: #2D55FB; }"
         "#login-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
         "#login-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
         "#email-label, #password-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
