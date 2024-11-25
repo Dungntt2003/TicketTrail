@@ -66,12 +66,12 @@ int main(int argc, char *argv[]) {
     // CSS
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider,
-        "* { background-color: #2D55FB; }"
+        "* { background-color: #050A24; }"
         "#login-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
         "#login-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
-        "#email-label, #password-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
+        "#email-label, #password-label { font-family: Poppins; font-size: 18px; font-weight: 500; color: #344054; background-color: transparent; }"
         "#email-entry, #password-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
-        "#login-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF; }"
+        "#login-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF;}"
         "#login-button:hover { background-color: #125ECB; }"
         "#footer-text, #sign-up { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
         "#sign-up { color: #1570EF; text-decoration: underline; }",
@@ -104,7 +104,6 @@ int main(int argc, char *argv[]) {
     // Email label và input
     GtkWidget *label_email = gtk_label_new("Email");
     gtk_widget_set_name(label_email, "email-label");
-    gtk_widget_set_margin_start(label_email, 16); // Căn lề trái
     gtk_box_pack_start(GTK_BOX(login_box), label_email, FALSE, FALSE, 0);
 
     entry_email = gtk_entry_new();
@@ -117,7 +116,6 @@ int main(int argc, char *argv[]) {
     // Password label và input
     GtkWidget *label_password = gtk_label_new("Password");
     gtk_widget_set_name(label_password, "password-label");
-    gtk_widget_set_margin_start(label_password, 16); // Căn lề trái
     gtk_box_pack_start(GTK_BOX(login_box), label_password, FALSE, FALSE, 0);
 
     entry_password = gtk_entry_new();
