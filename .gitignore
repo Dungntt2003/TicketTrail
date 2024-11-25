@@ -1,2 +1,6 @@
-*.exe
-.vscode/
+
+*.o      
+*.out    
+*.exe    
+build/
+bin/

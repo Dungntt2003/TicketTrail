@@ -5,8 +5,13 @@
 #include <ctype.h>
 #include <openssl/sha.h>
 #include <time.h>
+#include "../user/user.h"
 
-void hash_password(const char *password, char *hashed_password) {
+User *user= NULL;
+int countUser = 0;
+
+
+void hash_password_func(const char *password, char *hashed_password) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256((unsigned char *)password, strlen(password), hash);
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
@@ -47,25 +52,17 @@ bool validate_password(const char *password) {
 }
 
 bool checkEmailExist (const char *email){
-    FILE *file1 = fopen("users.txt", "r");
-    if (!file1) {
-        perror("Cann't open file\n");
+    if (fetch_users(&user, &countUser) != 0){
+        fprintf(stderr, "Failed to fetch users.\n");
         return false;
     }
-
-    char line[256];
-
-    while (fgets(line, sizeof(line), file1)) {
-        User user;
-        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^\n]",
-               user.email, user.name, user.phone, user.hashed_password, user.created_at);
-        if (strcmp(user.email, email) == 0) {
-            fclose(file1);
-            printf("Email has existed\n");
+    for (int i = 0; i < countUser; i++) {
+        if (strcmp(user[i].email, email) == 0) {
+            printf("Email already in use\n");
             return true;
         }
     }
-    fclose(file1);
+    free(user);
     return false;
 }
 
@@ -73,47 +70,40 @@ bool register_user(const char *email, const char *name, const char *phone, const
     if (checkEmailExist(email)){
         return false;
     }
-    FILE *file = fopen("users.txt", "a");
-    if (!file) {
-        perror("Cann't open file");
+    if (fetch_users(&user, &countUser)!=0) {
+        fprintf(stderr, "Failed to fetch users.\n");
         return false;
     }
 
     char hashed_password[65];
-    hash_password(password, hashed_password);
-
-    char created_at[30];
-    get_current_time(created_at, sizeof(created_at));
-
-    fprintf(file, "%s,%s,%s,%s,%s\n", email, name, phone, hashed_password, created_at);
-    fclose(file);
+    hash_password_func(password, hashed_password);
+    User newUser;
+    strcpy(newUser.name, name);
+    strcpy(newUser.phone, phone);
+    strcpy(newUser.email, email);
+    strcpy(newUser.password, hashed_password);
+    if (add_user(&newUser) != 0) {
+        fprintf(stderr, "Failed to add user.\n");
+        return false;
+    }
 
     printf("Register successfully!\n");
+    free(user);
     return true;
 }
 
 bool login_user(const char *email, const char *password) {
-    FILE *file = fopen("users.txt", "r");
-    if (!file) {
-        perror("Cann't open file");
+    char hashed_password[65];
+    hash_password_func(password, hashed_password);
+    if (fetch_users(&user, &countUser) != 0){
+        fprintf(stderr, "Failed to fetch users.\n");
         return false;
     }
-
-    char line[256];
-    char hashed_password[65];
-    hash_password(password, hashed_password);
-
-    while (fgets(line, sizeof(line), file)) {
-        User user;
-        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^\n]",
-               user.email, user.name, user.phone, user.hashed_password, user.created_at);
-
-        if (strcmp(user.email, email) == 0 && strcmp(user.hashed_password, hashed_password) == 0) {
-            fclose(file);
+    for (int i = 0; i < countUser; i++){
+        if (strcmp(user[i].email, email) == 0 && strcmp(user[i].password, hashed_password) == 0){
+            printf("Login successfully\n");
             return true;
         }
     }
-    fclose(file);
-    printf("Wrong login information.\n");
     return false;
 }
