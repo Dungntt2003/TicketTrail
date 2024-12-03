@@ -1,13 +1,22 @@
 #include <gtk/gtk.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "homepage.h"
+#include "../backend/auth/auth.h"
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8080
+#define BUFFER_SIZE 1024
 
+GtkWidget *window, *overlay, *login_box, *label_login_title, *button_login, *hbox_footer;
 GtkWidget *entry_email, *entry_password, *label_status;
+char buffer[BUFFER_SIZE];
 
 void on_login_clicked(GtkWidget *widget, gpointer data) {
     const char *email = gtk_entry_get_text(GTK_ENTRY(entry_email));
@@ -15,6 +24,16 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
 
     if (strlen(email) == 0 || strlen(password) == 0) {
         gtk_label_set_text(GTK_LABEL(label_status), "Please fill in all fields!");
+        return;
+    }
+
+    if (!validate_email(email)){
+         gtk_label_set_text(GTK_LABEL(label_status), "Email is not valid");
+        return;
+    }
+
+    if (!validate_password(password)){
+         gtk_label_set_text(GTK_LABEL(label_status), "Password has to be at least 1 number, 1 uppercase, 6 characters");
         return;
     }
 
@@ -34,19 +53,37 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
         close(sock);
         return;
     }
+    int option = 2;
+    send(sock, &option, sizeof(option), 0);
+    snprintf(buffer, sizeof(buffer), "%s;%s", email, password);
 
-    char buffer[1024];
-    snprintf(buffer, sizeof(buffer), "email=%s&password=%s", email, password);
-    send(sock, buffer, strlen(buffer), 0);
-
-    char response[256];
-    int bytes_received = recv(sock, response, sizeof(response) - 1, 0);
-    if (bytes_received > 0) {
-        response[bytes_received] = '\0';
-        gtk_label_set_text(GTK_LABEL(label_status), response);
-    } else {
-        gtk_label_set_text(GTK_LABEL(label_status), "No response from server!");
+    send(sock, buffer, strlen(buffer) + 1, 0);
+    recv(sock, buffer, sizeof(buffer), 0);
+    g_print("Receive: %s\n", buffer);
+    if (strcmp(buffer, "Success") == 0) {
+        gtk_label_set_text(GTK_LABEL(label_status), "Login successfully");
+         gtk_widget_hide(window);
+        create_homepage_window();
     }
+    else  {
+        gtk_label_set_text(GTK_LABEL(label_status), "Please try again, email or password is not match");
+        // gtk_widget_hide(window);
+        // create_homepage_window();
+    }
+
+    
+
+    
+    // send(sock, buffer, strlen(buffer), 0);
+
+    // char response[256];
+    // int bytes_received = recv(sock, response, sizeof(response) - 1, 0);
+    // if (bytes_received > 0) {
+    //     response[bytes_received] = '\0';
+    //     gtk_label_set_text(GTK_LABEL(label_status), response);
+    // } else {
+    //     gtk_label_set_text(GTK_LABEL(label_status), "No response from server!");
+    // }
 
     close(sock);
 }
@@ -54,7 +91,6 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
 
-    GtkWidget *window, *overlay, *login_box, *label_login_title, *button_login, *hbox_footer;
 
     // Tạo cửa sổ chính
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -80,6 +116,8 @@ int main(int argc, char *argv[]) {
     GtkStyleContext *context = gtk_widget_get_style_context(window);
     gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
+
+    
     // Sử dụng Overlay để căn giữa login_box
     overlay = gtk_overlay_new();
     gtk_container_add(GTK_CONTAINER(window), overlay);
@@ -131,6 +169,10 @@ int main(int argc, char *argv[]) {
     gtk_widget_set_name(button_login, "login-button");
     g_signal_connect(button_login, "clicked", G_CALLBACK(on_login_clicked), NULL);
     gtk_box_pack_start(GTK_BOX(login_box), button_login, FALSE, FALSE, 0);
+
+     label_status = gtk_label_new("");
+    gtk_widget_set_name(label_status, "status-label");
+    gtk_box_pack_start(GTK_BOX(login_box), label_status, FALSE, FALSE, 0);
 
     // Footer text
     hbox_footer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);

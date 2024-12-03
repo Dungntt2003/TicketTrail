@@ -74,15 +74,38 @@ void *handle_client(void *client_socket) {
                 else send(sock, "Fail", sizeof("Fail"), 0);           
             }
             else if (option == 2){
-                recv(sock, email, sizeof(email), 0);
-                printf("Email: %s\n", email);
-                recv(sock, password, sizeof(password), 0);
-                printf("Password: %s\n", password);
-                if (login_user(email, password)){
-                    is_logged_in = true;
-                    send(sock, "Success", sizeof("Success"), 0);
+                char email[256], password[256];
+                // int bytes_received = recv(sock, buffer, sizeof(buffer), 0);
+                // if (bytes_received > 0) {
+                //     char *email = strtok(buffer, ";");
+                //     char *password = strtok(NULL, ";");
+
+                //     printf("Received email: %s\n", email);
+                //     printf("Received password: %s\n", password);
+                // }
+                // if (login_user(email, password)){
+                //     is_logged_in = true;
+                //     send(sock, "Success", sizeof("Success"), 0);
+                // }
+                // else send(sock, "Fail", sizeof("Fail"), 0);  
+
+                do {
+                    int bytes_received = recv(sock, buffer, sizeof(buffer), 0);
+                    if (bytes_received > 0) {
+                        strcpy(email, strtok(buffer, ";"));   
+                        strcpy(password, strtok(NULL, ";")); 
+                        printf("Received email: %s\n", email);
+                        printf("Received password: %s\n", password);
+                    }
+                    if (login_user(email, password)){
+                        is_logged_in = true;
+                        send(sock, "Success", sizeof("Success"), 0);
+                        break;
+                    }
+                    else send(sock, "Fail", sizeof("Fail"), 0);  
                 }
-                else send(sock, "Fail", sizeof("Fail"), 0);  
+                while (!login_user(email, password));
+                
             } else {
                 printf("Client out\n");
                 break;
