@@ -2,12 +2,14 @@
 #include <regex.h>
 #include <string.h>
 
-GtkWidget *entry_email, *entry_password, *entry_confirm_password, *label_status;
+GtkWidget *entry_email, *entry_password, *entry_confirm_password, *entry_username, *entry_phone, *label_status;
 
 void on_register_clicked(GtkWidget *widget, gpointer data) {
     const char *email = gtk_entry_get_text(GTK_ENTRY(entry_email));
     const char *password = gtk_entry_get_text(GTK_ENTRY(entry_password));
     const char *confirm_password = gtk_entry_get_text(GTK_ENTRY(entry_confirm_password));
+    const char *username = gtk_entry_get_text(GTK_ENTRY(entry_username));
+    const char *phone = gtk_entry_get_text(GTK_ENTRY(entry_phone));
 
     // Kiểm tra định dạng email
     regex_t regex;
@@ -19,11 +21,14 @@ void on_register_clicked(GtkWidget *widget, gpointer data) {
     reti = regexec(&regex, email, 0, NULL, 0);
     regfree(&regex);
 
-    if (strlen(email) == 0 || strlen(password) == 0 || strlen(confirm_password) == 0) {
+    // Kiểm tra trường không rỗng
+    if (strlen(email) == 0 || strlen(password) == 0 || strlen(confirm_password) == 0 || 
+        strlen(username) == 0 || strlen(phone) == 0) {
         gtk_label_set_text(GTK_LABEL(label_status), "All fields are required!");
         return;
     }
 
+    // Kiểm tra định dạng email
     if (reti) {
         gtk_label_set_text(GTK_LABEL(label_status), "Invalid email format!");
         return;
@@ -32,6 +37,12 @@ void on_register_clicked(GtkWidget *widget, gpointer data) {
     // Kiểm tra mật khẩu khớp
     if (strcmp(password, confirm_password) != 0) {
         gtk_label_set_text(GTK_LABEL(label_status), "Passwords do not match!");
+        return;
+    }
+
+    // Kiểm tra mật khẩu đủ độ dài
+    if (strlen(password) < 6) {
+        gtk_label_set_text(GTK_LABEL(label_status), "Password must be at least 6 characters long!");
         return;
     }
 
@@ -61,8 +72,8 @@ int main(int argc, char *argv[]) {
         "* { background-color: #050A24; }"
         "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
         "#register-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
-        "#email-label, #password-label, #confirm-password-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
-        "#email-entry, #password-entry, #confirm-password-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
+        "#email-label, #password-label, #confirm-password-label, #username-label, #phone-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
+        "#email-entry, #password-entry, #confirm-password-entry, #username-entry, #phone-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
         "#register-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF; }"
         "#register-button:hover { background-color: #125ECB; }"
         "#footer-text, #login-link { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
@@ -89,9 +100,27 @@ int main(int argc, char *argv[]) {
     // Tiêu đề
     label_register_title = gtk_label_new("Create an account");
     gtk_widget_set_name(label_register_title, "register-title");
-    GtkStyleContext *title_context = gtk_widget_get_style_context(label_register_title);
-    gtk_style_context_add_provider(title_context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_box_pack_start(GTK_BOX(register_box), label_register_title, FALSE, FALSE, 0);
+
+    // Username label và input
+    GtkWidget *label_username = gtk_label_new("Username");
+    gtk_widget_set_name(label_username, "username-label");
+    gtk_box_pack_start(GTK_BOX(register_box), label_username, FALSE, FALSE, 0);
+
+    entry_username = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_username), "Enter your username");
+    gtk_widget_set_name(entry_username, "username-entry");
+    gtk_box_pack_start(GTK_BOX(register_box), entry_username, FALSE, FALSE, 0);
+
+    // Phone label và input
+    GtkWidget *label_phone = gtk_label_new("Phone Number");
+    gtk_widget_set_name(label_phone, "phone-label");
+    gtk_box_pack_start(GTK_BOX(register_box), label_phone, FALSE, FALSE, 0);
+
+    entry_phone = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_phone), "Enter your phone number");
+    gtk_widget_set_name(entry_phone, "phone-entry");
+    gtk_box_pack_start(GTK_BOX(register_box), entry_phone, FALSE, FALSE, 0);
 
     // Email label và input
     GtkWidget *label_email = gtk_label_new("Email");
