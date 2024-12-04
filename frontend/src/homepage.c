@@ -387,7 +387,7 @@ GtkWidget* create_selection_box() {
 
 // Hàm chính tạo cửa sổ và thêm header
 int main(int argc, char *argv[]) {
-    GtkWidget *window, *header, *main_box, *overlay, *text_label, *darea, *selection_box;
+    GtkWidget *window, *header, *main_box, *overlay, *darea, *selection_box;
 
     // Khởi tạo GTK
     gtk_init(&argc, &argv);
@@ -404,17 +404,26 @@ int main(int argc, char *argv[]) {
     gint screen_width = geometry.width;
     gint screen_height = geometry.height;
 
-    gtk_window_set_default_size(GTK_WINDOW(window), screen_width - 10, screen_height - 10);
+    // Đặt cửa sổ chiếm toàn bộ màn hình
+    gtk_window_set_default_size(GTK_WINDOW(window), screen_width, screen_height);
 
+    // Cấm thay đổi kích thước cửa sổ
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+
+    // Đăng ký sự kiện khi đóng cửa sổ
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
 
-    // Tạo main container
+    // Tạo main container (dọc)
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window), main_box);
 
+    // Đảm bảo main_box có thể co giãn hoàn toàn theo chiều dọc
+    gtk_widget_set_halign(main_box, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(main_box, GTK_ALIGN_FILL);
+
     // Tạo mảng lưu các nút trong header
     GtkWidget *buttons[4];
-    
+
     // Tạo header
     header = create_header(buttons);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
@@ -423,18 +432,31 @@ int main(int argc, char *argv[]) {
     overlay = gtk_overlay_new();
     gtk_box_pack_start(GTK_BOX(main_box), overlay, TRUE, TRUE, 0);
 
+    // Đảm bảo overlay có thể co giãn
+    gtk_widget_set_halign(overlay, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(overlay, GTK_ALIGN_FILL);
+
     // Tạo khu vực vẽ nền (background)
     darea = gtk_drawing_area_new();
     g_signal_connect(darea, "draw", G_CALLBACK(on_draw_event), NULL);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), darea);
 
+    // Đảm bảo darea co giãn để phủ toàn bộ không gian cửa sổ
+    gtk_widget_set_halign(darea, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(darea, GTK_ALIGN_FILL);
+
     // Tạo selection box và thêm vào overlay
     selection_box = create_selection_box();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), selection_box);
 
+    // Đảm bảo selection_box co giãn để phủ toàn bộ không gian cửa sổ
+    gtk_widget_set_halign(selection_box, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(selection_box, GTK_ALIGN_FILL);
+
     // Hiển thị cửa sổ
     gtk_widget_show_all(window);
 
+    // Bắt đầu vòng lặp sự kiện của GTK
     gtk_main();
 
     return 0;
