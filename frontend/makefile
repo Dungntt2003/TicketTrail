@@ -1,21 +1,2 @@
-CC = gcc
-CFLAGS = `pkg-config --cflags gtk+-3.0`
-LIBS = `pkg-config --libs gtk+-3.0`
-
-SRC = src/homepage.c
-OBJ = homepage.o
-EXEC = homepage
-
-# Phương thức tạo executable
-all: $(EXEC)
-
-$(EXEC): $(OBJ)
-	$(CC) -o $@ $^ $(LIBS)
-
-# Phương thức tạo object file từ source
-$(OBJ): $(SRC)
-	$(CC) -c $(SRC) $(CFLAGS)
-
-# Lệnh clean để xóa các file object và executable cũ
-clean:
-	rm -f $(OBJ) $(EXEC)
+# cd vào src rồi chạy câu lệnh này
+# gcc client.c ./register/register.c ./auth/auth.c ./server_com/server_com.c ./login/login.c ./homepage/homepage.c  -o client `pkg-config --cflags --libs gtk+-3.0` -lssl -lcrypto -lpthread

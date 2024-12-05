@@ -10,7 +10,7 @@
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
-
+char *token;
   Flight flights[MAX_FLIGHTS] = {
         {"Hanoi", "Ho Chi Minh", "2023-12-01", 2, "Economy", 100.50},
         {"Hanoi", "Da Nang", "2023-12-05", 1, "Business", 150.75},
@@ -56,70 +56,62 @@ void *handle_client(void *client_socket) {
     int read_size;
 
     while (1) {
-    recv(sock, &option, sizeof(option), 0);
         if (!is_logged_in){
-            if (option==1){
-                recv(sock, email, sizeof(email), 0);
-                printf("Email: %s\n", email);
-                recv(sock, name, sizeof(name), 0);
-                printf("Name: %s\n", name);
-                recv(sock, phone, sizeof(phone), 0);
-                printf("Phone: %s\n", phone);
-                recv(sock, password, sizeof(password), 0);
-                printf("Address: %s\n", password);  
-                if (register_user(email, name, phone, password)){
-                    is_logged_in = true;
-                    send(sock, "Success", sizeof("Success"), 0);
-                } 
-                else send(sock, "Fail", sizeof("Fail"), 0);           
-            }
-            else if (option == 2){
-                recv(sock, email, sizeof(email), 0);
-                printf("Email: %s\n", email);
-                recv(sock, password, sizeof(password), 0);
-                printf("Password: %s\n", password);
-                if (login_user(email, password)){
-                    is_logged_in = true;
-                    send(sock, "Success", sizeof("Success"), 0);
+           recv(sock, buffer, sizeof(buffer), 0);
+           buffer[strcspn(buffer, "\n")] = 0;
+           if (strncmp(buffer, "REGISTER", strlen("REGISTER")) == 0){
+                printf("%s\n", buffer);      
+                token = strtok(buffer, " ");
+    
+                token = strtok(NULL, ":");
+                strcpy(name, token);
+
+                token = strtok(NULL, ":");
+                strcpy(phone, token);
+                
+                token = strtok(NULL, ":");
+                strcpy(email, token);
+                
+                token = strtok(NULL, ":");
+                strcpy(password, token);
+                
+                printf("Check name: %s\n", name);
+                printf("Check phone: %s\n", phone);
+                printf("Check email: %s\n", email);
+                printf("Check password: %s\n", password);
+                if (checkEmailExist(email)){
+                    send(sock, "EMAIL_EXISTED", strlen("EMAIL_EXISTED") + 1, 0);
+                }else {
+                    if (register_user(email, name, phone, password)){
+                        send(sock, "SUCCESS", strlen("SUCCESS") + 1, 0);
+                    }
+                    else send(sock, "FAILED", strlen("FAILED") + 1, 0);
                 }
-                else send(sock, "Fail", sizeof("Fail"), 0);  
-            } else {
-                printf("Client out\n");
-                break;
+            } else if (strncmp(buffer, "LOGIN", strlen("LOGIN")) == 0){
+                printf("%s\n", buffer);      
+                token = strtok(buffer, " ");
+                
+                token = strtok(NULL, ":");
+                strcpy(email, token);
+                
+                token = strtok(NULL, ":");
+                strcpy(password, token);
+
+                printf("Check email: %s\n", email);
+                printf("Check password: %s\n", password);
+                if (!checkEmailExist(email)){
+                    send(sock, "EMAIL_NOT_FOUND", strlen("EMAIL_NOT_FOUND") + 1, 0);
+                }else {
+                    if (login_user(email, password)){
+                        send(sock, "SUCCESS", strlen("SUCCESS") + 1, 0);
+                        is_logged_in = true;
+                    }
+                    else send(sock, "FAILED", strlen("FAILED") + 1, 0);
+                }
             }
         }
         else {
-            Flight filterFlights[MAX_FLIGHTS];
-            char departure[BUFFER_SIZE];
-            char destination[BUFFER_SIZE];
-            char departureDate[BUFFER_SIZE];
-            char seatClass[BUFFER_SIZE];
-            send(sock, &flightCount, sizeof(flightCount), 0);
-            send(sock, flights, sizeof(Flight) * flightCount, 0);
-            if (option == 1){
-                printf("Client log out\n");
-                is_logged_in= false;
-            }
-            else if (option == 2){
-                printf("Print list flights for client\n");
-            }  else if (option == 3){
-                recv(sock, departure, sizeof(departure), 0);
-                printf("Departure: %s\n", departure);
-                recv(sock, destination, sizeof(destination), 0);
-                printf("Destination: %s\n", destination);
-                recv(sock, departureDate, sizeof(departureDate), 0);
-                printf("Departure Date: %s\n", departureDate);
-                recv(sock, seatClass, sizeof(seatClass), 0);
-                printf("Seat class: %s\n", seatClass);
-                int filterCount = filterFlight(flights, flightCount, departure, destination, departureDate, seatClass, filterFlights);
-                printf("Print list flight after filtering\n");
-                send(sock, &filterCount, sizeof(filterCount), 0);
-                send(sock, filterFlights, sizeof(Flight) * filterCount, 0);
-            }
-            else if (option == 6){
-                printf("Client out!\n");
-                break;
-            }
+           
         }
     }
 
