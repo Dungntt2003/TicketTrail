@@ -103,13 +103,13 @@ GtkWidget* create_header(GtkWidget **buttons) {
 
     
     header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_size_request(header, 1090, 50);
+    gtk_widget_set_size_request(header, 1080, 40);
 
     
     gtk_widget_set_name(header, "header");
     gtk_widget_set_margin_top(header, 10);
     gtk_widget_set_margin_start(header, 20); 
-    gtk_widget_set_margin_end(header, 330); 
+    gtk_widget_set_margin_end(header, 300); 
     gtk_widget_set_margin_bottom(header, 10);
 
     
@@ -195,7 +195,7 @@ GtkWidget* create_header(GtkWidget **buttons) {
 
 GtkWidget* create_input_box(const gchar *placeholder) {
     GtkWidget *input_box = gtk_entry_new();  
-    gtk_widget_set_size_request(input_box, 240, 45);  
+    gtk_widget_set_size_request(input_box, 210, 40);  
     gtk_entry_set_placeholder_text(GTK_ENTRY(input_box), placeholder);
 
     
@@ -227,7 +227,7 @@ GtkWidget* create_input_box_with_date_picker(const gchar *placeholder) {
     GtkWidget *calendar = gtk_calendar_new();  
 
     
-    gtk_widget_set_size_request(calendar, 240, 100);  
+    gtk_widget_set_size_request(calendar, 210, 90);  
 
     
     gtk_box_pack_start(GTK_BOX(box), input_box, FALSE, FALSE, 0);
@@ -267,14 +267,14 @@ GtkWidget* create_label(const gchar *text) {
 
 GtkWidget* create_selection_box() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
-    gtk_widget_set_margin_top(box, 400);   
+    gtk_widget_set_margin_top(box, 350);   
     gtk_widget_set_margin_start(box, 30);  
     gtk_widget_set_margin_end(box, 30);    
     GtkCssProvider *box_provider = gtk_css_provider_new();
     
     for (int i = 0; i < 5; i++) {
         GtkWidget *section_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
-        gtk_widget_set_size_request(section_box, 240, -1); 
+        gtk_widget_set_size_request(section_box, 210, 40); 
 
         if (i == 0) {
             GtkWidget *label_from = create_label("From");
