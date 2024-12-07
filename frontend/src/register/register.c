@@ -12,7 +12,6 @@ GtkWidget *entry_password;
 GtkWidget *entry_confirm_password;
 GtkWidget *entry_username;
 GtkWidget *entry_phone;
-GtkWidget *overlay;
 GtkWidget *label_status;
 GtkWidget *window;
 int sock;
@@ -81,12 +80,10 @@ void on_login_link_click (GtkWidget *widget, gpointer data){
 }
 
 GtkWidget* create_register_window() {
-    GtkWidget *register_box, *label_register_title, *button_register, *hbox_footer;
-    
-    register_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 24);
+    GtkWidget *register_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 24);
     gtk_widget_set_name(register_box, "register-box");
 
-    label_register_title = gtk_label_new("Create an account");
+    GtkWidget *label_register_title = gtk_label_new("Create an account");
     gtk_widget_set_name(label_register_title, "register-title");
     gtk_box_pack_start(GTK_BOX(register_box), label_register_title, FALSE, FALSE, 0);
 
@@ -137,70 +134,55 @@ GtkWidget* create_register_window() {
     gtk_widget_set_name(entry_confirm_password, "confirm-password-entry");
     gtk_box_pack_start(GTK_BOX(register_box), entry_confirm_password, FALSE, FALSE, 0);
 
-    button_register = gtk_button_new_with_label("Create account");
+    GtkWidget *button_register = gtk_button_new_with_label("Create account");
     gtk_widget_set_name(button_register, "register-button");
     g_signal_connect(button_register, "clicked", G_CALLBACK(on_register), register_box);
     gtk_box_pack_start(GTK_BOX(register_box), button_register, FALSE, FALSE, 0);
 
     label_status = gtk_label_new("");
-    gtk_widget_set_name(label_status, "status-label");
     gtk_box_pack_start(GTK_BOX(register_box), label_status, FALSE, FALSE, 0);
 
-    hbox_footer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+    GtkWidget *hbox_footer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
     GtkWidget *footer_text = gtk_label_new("Already have an account?");
     gtk_widget_set_name(footer_text, "footer-text");
     gtk_box_pack_start(GTK_BOX(hbox_footer), footer_text, FALSE, FALSE, 0);
 
     GtkWidget *login_button = gtk_button_new_with_label("Log in");
     gtk_widget_set_name(login_button, "login-link");
-    g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_link_click), window);
+    g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_link_click), NULL);
     gtk_box_pack_start(GTK_BOX(hbox_footer), login_button, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(register_box), hbox_footer, FALSE, FALSE, 0);
 
-
     return register_box;
 }
 
-void create_register_widget(int socket){
+void create_register_widget(int socket) {
     sock = socket;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Register");
     gtk_window_set_default_size(GTK_WINDOW(window), 400, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-
     GtkCssProvider *provider = gtk_css_provider_new();
-   gtk_css_provider_load_from_data(provider,
-    "* { background-image: url('../../assets/images/bg_login.png'); background-size: cover; background-position: center; }"
-    "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
-   "#register-title { font-family: Arial, sans-serif; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
-    "#email-label, #password-label, #confirm-password-label, #username-label, #phone-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
-    "#email-entry, #password-entry, #confirm-password-entry, #username-entry, #phone-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
-    "#register-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF; }"
-    "#register-button:hover { background-color: #125ECB; }"
-    "#footer-text, #login-link { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
-    "#login-link { color: #1570EF; text-decoration: underline; }",
-    -1, NULL);
-
+    if (!gtk_css_provider_load_from_data(provider,
+        "* { background-image: url('../assets/images/bg_login.png'); background-size: cover; background-position: center; }"
+        "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
+        "#register-title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; color: #101828; }",
+        -1, NULL)) {
+        g_print("Failed to load CSS\n");
+    }
 
     GtkStyleContext *context = gtk_widget_get_style_context(window);
-   gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
     GtkWidget *overlay = gtk_overlay_new();
     gtk_container_add(GTK_CONTAINER(window), overlay);
-gtk_overlay_add_overlay(GTK_OVERLAY(overlay), register_box);
-
-    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add(GTK_CONTAINER(window), scrolled_window);
 
     GtkWidget *register_box = create_register_window();
-    gtk_widget_set_name(register_box, "register-box");
-    GtkStyleContext *register_box_context = gtk_widget_get_style_context(register_box);
-    gtk_style_context_add_provider(register_box_context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    gtk_container_add(GTK_CONTAINER(scrolled_window), register_box);
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), scrolled_window);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), register_box);
     gtk_widget_set_halign(register_box, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(register_box, GTK_ALIGN_CENTER);
 
