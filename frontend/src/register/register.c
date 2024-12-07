@@ -172,23 +172,25 @@ void create_register_widget(int socket){
 
 
     GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider,
-        "* { background-color: #050A24; }"
-        "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
-        "#register-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
-        "#email-label, #password-label, #confirm-password-label, #username-label, #phone-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
-        "#email-entry, #password-entry, #confirm-password-entry, #username-entry, #phone-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
-        "#register-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF; }"
-        "#register-button:hover { background-color: #125ECB; }"
-        "#footer-text, #login-link { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
-        "#login-link { color: #1570EF; text-decoration: underline; }",
-        -1, NULL);
+   gtk_css_provider_load_from_data(provider,
+    "* { background-image: url('../../assets/images/bg_login.png'); background-size: cover; background-position: center; }"
+    "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
+   "#register-title { font-family: Arial, sans-serif; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
+    "#email-label, #password-label, #confirm-password-label, #username-label, #phone-label { font-family: Poppins; font-size: 20px; font-weight: bold; color: #344054; background-color: transparent; }"
+    "#email-entry, #password-entry, #confirm-password-entry, #username-entry, #phone-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
+    "#register-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF; }"
+    "#register-button:hover { background-color: #125ECB; }"
+    "#footer-text, #login-link { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
+    "#login-link { color: #1570EF; text-decoration: underline; }",
+    -1, NULL);
+
 
     GtkStyleContext *context = gtk_widget_get_style_context(window);
-    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
+   gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
     GtkWidget *overlay = gtk_overlay_new();
     gtk_container_add(GTK_CONTAINER(window), overlay);
+gtk_overlay_add_overlay(GTK_OVERLAY(overlay), register_box);
+
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_container_add(GTK_CONTAINER(window), scrolled_window);
