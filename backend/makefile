@@ -9,11 +9,12 @@ AUTH_DIR = ./auth
 FILTER_DIR = ./filter
 DB_DIR = ./db
 AIRLINE_DIR = ./airline
+FLIGHT_DIR = ./flight
 USER_DIR = ./user
 TEST_CONNECT_DIR = ./testConnect
 
 SERVER_SRC = $(SRC_DIR)/server.c $(AUTH_DIR)/auth.c $(FILTER_DIR)/filter.c $(USER_DIR)/user.c $(DB_DIR)/db.c
-CONNECT_SRC = $(TEST_CONNECT_DIR)/connect.c $(DB_DIR)/db.c $(AIRLINE_DIR)/airline.c $(USER_DIR)/user.c
+CONNECT_SRC = $(TEST_CONNECT_DIR)/connect.c $(DB_DIR)/db.c $(AIRLINE_DIR)/airline.c $(USER_DIR)/user.c ${FLIGHT_DIR}/flight.c
 
 BINS = server connect
 
