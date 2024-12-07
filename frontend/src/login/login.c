@@ -59,18 +59,19 @@ void on_register_link_click(GtkWidget *widget, gpointer data) {
 GtkWidget *create_login_window() {
     GtkWidget *overlay, *login_box, *button_login, *hbox_footer;
 
-    GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider,
-        "* { background-color:#050A24; }"
-        "#login-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
-        "#login-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
-        "#email-label, #password-label { font-family: Poppins; font-size: 18px; font-weight: 500; color: #344054; background-color: transparent; }"
-        "#email-entry, #password-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
-        "#login-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF;}"
-        "#login-button:hover { background-color: #125ECB; }"
-        "#footer-text, #sign-up { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
-        "#sign-up { color: #1570EF; text-decoration: underline; }",
-        -1, NULL);
+   GtkCssProvider *provider = gtk_css_provider_new();
+gtk_css_provider_load_from_data(provider,
+    "* { background-image: url('../assets/images/bg_login.png'); background-size: cover; background-position: center; }"
+    "#login-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
+    "#login-title { font-family: Poppins; font-size: 28px; font-weight: 600; color: #101828; background-color: transparent; }"
+    "#email-label, #password-label { font-family: Poppins; font-size: 18px; font-weight: 500; color: #344054; background-color: transparent; }"
+    "#email-entry, #password-entry { border: 3px solid #D0D5DD; border-radius: 8px; padding: 12px 16px; color: #344054; background-color: #FFFFFF; }"
+    "#login-button { color: #FCFCFD; border-radius: 8px; font-family: Poppins; font-weight: 600; font-size: 16px; background-color: #1570EF;}"
+    "#login-button:hover { background-color: #125ECB; }"
+    "#footer-text, #sign-up { font-family: Poppins; font-size: 16px; font-weight: 400; color: #98A2B3; background-color: transparent; }"
+    "#sign-up { color: #1570EF; text-decoration: underline; }",
+    -1, NULL);
+
 
     login_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 24);
     gtk_widget_set_name(login_box, "login-box");
