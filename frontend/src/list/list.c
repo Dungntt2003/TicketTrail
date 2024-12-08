@@ -15,49 +15,9 @@ static Flight flights[MAX_FLIGHTS] = {
     {"Airline J", "17:00", "19:00", "Business", 230.0}
 };
 
-// Hàm để sắp xếp vé theo giá
-static void sort_flights(gboolean ascending) {
-    for (int i = 0; i < MAX_FLIGHTS; i++) {
-        for (int j = i + 1; j < MAX_FLIGHTS; j++) {
-            if ((ascending && flights[i].price > flights[j].price) ||
-                (!ascending && flights[i].price < flights[j].price)) {
-                Flight temp = flights[i];
-                flights[i] = flights[j];
-                flights[j] = temp;
-            }
-        }
-    }
-}
-
-// Hàm xử lý sự kiện cho nút sắp xếp
-static void on_sort_button_clicked(GtkButton *button, gpointer user_data) {
-    gboolean ascending = (gpointer)user_data == GINT_TO_POINTER(1);
-    sort_flights(ascending);
-    
-    // Làm mới danh sách vé
-    GtkWidget *parent_box = gtk_widget_get_parent(gtk_widget_get_parent(button));
-    gtk_widget_destroy(parent_box);
-    
-    GtkWidget *ticket_list = create_ticket_list();
-    gtk_box_pack_start(GTK_BOX(parent_box), ticket_list, TRUE, TRUE, 0);
-    gtk_widget_show_all(parent_box);
-}
-
-// Tạo các nút sắp xếp
-GtkWidget* create_sort_buttons() {
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    
-    GtkWidget *asc_button = gtk_button_new_with_label("Sắp xếp Tăng dần");
-    GtkWidget *desc_button = gtk_button_new_with_label("Sắp xếp Giảm dần");
-
-    g_signal_connect(asc_button, "clicked", G_CALLBACK(on_sort_button_clicked), GINT_TO_POINTER(1));
-    g_signal_connect(desc_button, "clicked", G_CALLBACK(on_sort_button_clicked), GINT_TO_POINTER(0));
-
-    gtk_box_pack_start(GTK_BOX(box), asc_button, TRUE, TRUE, 10);
-    gtk_box_pack_start(GTK_BOX(box), desc_button, TRUE, TRUE, 10);
-
-    return box;
-}
+// Biến toàn cục
+GtkWidget *ticket_list; // Danh sách vé
+GtkWidget *main_box;    // Main box
 
 // Khai báo hàm on_button_toggled
 static void on_button_toggled(GtkToggleButton *button, gpointer user_data);
@@ -68,7 +28,6 @@ GtkWidget* create_header(GtkWidget **buttons) {
 
     header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_size_request(header, 1080, 40);
-
     gtk_widget_set_name(header, "header");
     gtk_widget_set_margin_top(header, 10);
     gtk_widget_set_margin_start(header, 20); 
@@ -161,7 +120,6 @@ static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
 // Hàm tạo nội dung vé
 GtkWidget* create_ticket_list() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    // Ví dụ: tạo các ô vé
     for (int i = 0; i < MAX_FLIGHTS; i++) {
         GtkWidget *ticket_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         
@@ -192,10 +150,67 @@ GtkWidget* create_ticket_list() {
     return box;
 }
 
+// Hàm làm mới danh sách vé
+void refresh_ticket_list(GtkWidget *container) {
+   GList *children, *iter;
+    children = gtk_container_get_children(GTK_CONTAINER(ticket_list));
+    
+    // Xóa các widget hiện có trong list
+    for (iter = children; iter != NULL; iter = g_list_next(iter)) {
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+
+    // Tạo lại danh sách vé mới và thêm vào container
+    GtkWidget *new_ticket_list = create_ticket_list();
+    gtk_box_pack_start(GTK_BOX(container), new_ticket_list, TRUE, TRUE, 0);
+    gtk_widget_show_all(container); // Hiển thị tất cả các widget trong container
+}
+// Hàm sắp xếp vé
+void sort_flights(gboolean ascending) {
+    for (int i = 0; i < MAX_FLIGHTS; i++) {
+        for (int j = i + 1; j < MAX_FLIGHTS; j++) {
+            if ((ascending && flights[i].price > flights[j].price) ||
+                (!ascending && flights[i].price < flights[j].price)) {
+                Flight temp = flights[i];
+                flights[i] = flights[j];
+                flights[j] = temp;
+            }
+        }
+    }
+}
+
+// Hàm xử lý khi người dùng chọn sắp xếp
+void on_sort_changed(GtkComboBox *combo, gpointer user_data) {
+    gint active_index = gtk_combo_box_get_active(combo);
+    if (active_index == 0) {
+        sort_flights(TRUE);
+    } else if (active_index == 1) {
+        sort_flights(FALSE);
+    }
+
+    // Gọi hàm làm mới danh sách vé
+    refresh_ticket_list(ticket_list); // Làm mới ticket_list
+}
+GtkWidget* create_filter_box() {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    GtkWidget *filter_label = gtk_label_new("Filter by price:");
+    GtkWidget *combo_box = gtk_combo_box_text_new();
+
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Low to High");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "High to Low");
+
+    g_signal_connect(combo_box, "changed", G_CALLBACK(on_sort_changed), NULL);
+
+    gtk_box_pack_start(GTK_BOX(box), filter_label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), combo_box, FALSE, FALSE, 0);
+
+    return box;
+}
 // Hàm tạo list window
 GtkWidget* create_list_window() {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "List of Tickets");
+    gtk_window_set_title(GTK_WINDOW(window), "Danh sách vé");
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
     
     // Tạo header
@@ -203,15 +218,14 @@ GtkWidget* create_list_window() {
     GtkWidget *header = create_header(buttons);
 
     // Tạo main box
-    GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // Đặt main_box là biến toàn cục
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
 
-    // Tạo nút sắp xếp và thêm vào main box
-    GtkWidget *sort_buttons = create_sort_buttons();
-    gtk_box_pack_start(GTK_BOX(main_box), sort_buttons, FALSE, FALSE, 0);
-    
+        GtkWidget *filter_box = create_filter_box();
+    gtk_box_pack_start(GTK_BOX(main_box), filter_box, FALSE, FALSE, 0);
+
     // Tạo nội dung vé
-    GtkWidget *ticket_list = create_ticket_list();
+    ticket_list = create_ticket_list(); // Đặt ticket_list là biến toàn cục
     gtk_box_pack_start(GTK_BOX(main_box), ticket_list, TRUE, TRUE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), main_box);
@@ -223,6 +237,7 @@ GtkWidget* create_list_window() {
 // Hàm chính
 void create_flight_list_widget() {
     GtkWidget *list_window = create_list_window();
+    // refresh_ticket_list(main_box);
     gtk_widget_show_all(list_window);
     gtk_main();
 }
