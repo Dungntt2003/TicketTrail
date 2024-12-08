@@ -14,6 +14,9 @@ typedef struct {
     gdouble price;
 } Flight;
 
+// Khai báo các hàm
 void create_flight_list_widget();
+GtkWidget* create_ticket_list();
+GtkWidget* create_header(GtkWidget **buttons);
 
 #endif
