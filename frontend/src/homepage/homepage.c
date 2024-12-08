@@ -2,7 +2,19 @@
 #include "homepage.h"
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include "../list/list.h"
+#define MAX_LENGTH 1024
+
 GtkWidget *homepage_window ;
+char buffer[MAX_LENGTH];
+int sock;
+
+void on_list_link_click(GtkWidget *widget, gpointer data) {
+        gtk_widget_destroy(homepage_window);
+        create_flight_list_widget(sock);
+}
 static void on_window_realize(GtkWidget *widget, gpointer user_data) {
     GtkWidget *calendar = GTK_WIDGET(user_data);
     gtk_widget_hide(calendar);  
@@ -350,6 +362,8 @@ GtkWidget* create_selection_box() {
         }
         else if (i == 4) {
             GtkWidget *search_button = gtk_button_new_with_label("Search Flight");
+            gtk_widget_set_name(search_button, "search_button");
+        g_signal_connect(search_button, "clicked", G_CALLBACK(on_list_link_click),homepage_window);
             gtk_widget_set_size_request(search_button, 100, 48);
 
             

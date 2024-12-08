@@ -1,5 +1,9 @@
 #include <gtk/gtk.h>
 #include "list.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include "../ticket_detail/ticket_detail.h"
+#define MAX_LENGTH 1024
 
 // Dữ liệu chuyến bay mẫu
 static Flight flights[MAX_FLIGHTS] = {
@@ -18,6 +22,14 @@ static Flight flights[MAX_FLIGHTS] = {
 // Biến toàn cục
 GtkWidget *ticket_list; // Danh sách vé
 GtkWidget *main_box;    // Main box
+char buffer[MAX_LENGTH];
+int sock;
+
+//Link 
+void on_detail_link_click(GtkWidget *widget, gpointer data) {
+        gtk_widget_destroy(main_box);
+        create_ticket_detail_window(sock);
+}
 
 // Khai báo hàm on_button_toggled
 static void on_button_toggled(GtkToggleButton *button, gpointer user_data);
@@ -129,7 +141,10 @@ GtkWidget* create_ticket_list() {
         GtkWidget *arrival_time_label = gtk_label_new(flights[i].arrival_time);
         GtkWidget *class_label = gtk_label_new(flights[i].class);
         GtkWidget *price_label = gtk_label_new(g_strdup_printf("$%.2f", flights[i].price));
+
         GtkWidget *check_button = gtk_button_new_with_label("Check");
+         gtk_widget_set_name(check_button, "check_button");
+        g_signal_connect(check_button, "clicked", G_CALLBACK(on_detail_link_click),main_box);
 
         // Thêm các label vào ticket_box
         gtk_box_pack_start(GTK_BOX(ticket_box), airline_label, TRUE, TRUE, 5);
@@ -237,13 +252,12 @@ GtkWidget* create_list_window() {
 // Hàm chính
 void create_flight_list_widget() {
     GtkWidget *list_window = create_list_window();
-    // refresh_ticket_list(main_box);
     gtk_widget_show_all(list_window);
     gtk_main();
 }
 
 int main(int argc, char *argv[]) {
-    gtk_init(&argc, &argv);  // Khởi tạo GTK
-    create_flight_list_widget(); // Gọi hàm tạo widget danh sách
-    return 0;                 // Trở về 0 khi kết thúc
+    gtk_init(&argc, &argv);  
+    create_flight_list_widget(); 
+    return 0;                
 }

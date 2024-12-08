@@ -19,8 +19,10 @@ void create_flight_list_widget();
 GtkWidget* create_ticket_list();
 GtkWidget* create_header(GtkWidget **buttons);
 GtkWidget* create_filter_box();
+void on_detail_link_click(GtkWidget *widget, gpointer data);
 void sort_flights(gboolean ascending);  // Không cần 'static' ở đây
 void on_sort_changed(GtkComboBox *combo, gpointer user_data);  // Không cần 'static' ở đây
 void refresh_ticket_list(GtkWidget *container);
+void create_flight_list_widget();
 
 #endif
