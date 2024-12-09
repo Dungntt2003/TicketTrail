@@ -17,5 +17,4 @@ GtkWidget* create_input_box_with_date_picker(const gchar *placeholder);
 GtkWidget* create_label(const gchar *text);
 GtkWidget* create_selection_box();
 GtkWidget* create_homepage_window();
-void create_homepage_widget ();
 #endif 

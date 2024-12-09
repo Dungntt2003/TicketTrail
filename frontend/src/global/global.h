@@ -6,8 +6,13 @@
 #define MAX_LENGTH 1024
 #define M_PI 3.14159265358979323846
 
-extern GtkWidget *entry_email, *entry_password, *label_status, *window;
+extern GtkWidget *entry_email, *entry_password, *label_status;
 extern char buffer[MAX_LENGTH];
 extern int sock;
+extern GtkWidget *window;
+extern GtkWidget *content_area;
+
+GtkWidget* create_main_window();
+void set_content(GtkWidget *new_content);
 
 #endif 

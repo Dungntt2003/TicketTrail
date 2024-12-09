@@ -50,12 +50,8 @@ void on_register(GtkWidget *widget, gpointer data) {
     recv(sock, buffer, sizeof(buffer), 0);
     g_print("Received from server: %s\n", buffer);
     if (strcmp(buffer, "SUCCESS") == 0){
-        if (GTK_IS_WIDGET(data)) {
-            GtkWidget *current_window = GTK_WIDGET(data);
-            gtk_widget_destroy(window);
-
-        }
-        create_login_widget(sock);
+        GtkWidget *login_content = create_login_window();
+        set_content(login_content);
     }
     else if (strcmp(buffer, "EMAIL_EXISTED") == 0){
         gtk_label_set_text(GTK_LABEL(label_status), "Email exists");
@@ -69,8 +65,8 @@ void on_register(GtkWidget *widget, gpointer data) {
 }
 
 void on_login_link_click (GtkWidget *widget, gpointer data){
-    gtk_widget_destroy(window); 
-    create_login_widget(sock);
+    GtkWidget *login_content = create_login_window();
+    set_content(login_content);
 }
 
 GtkWidget* create_register_window() {
@@ -149,36 +145,4 @@ GtkWidget* create_register_window() {
     gtk_box_pack_start(GTK_BOX(register_box), hbox_footer, FALSE, FALSE, 0);
 
     return register_box;
-}
-
-void create_register_widget() {
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Register");
-    // gtk_window_set_default_size(GTK_WINDOW(window), 400, 600);
-    // gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_fullscreen(GTK_WINDOW(window));
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    GtkCssProvider *provider = gtk_css_provider_new();
-    if (!gtk_css_provider_load_from_data(provider,
-        "* { background-image: url('../assets/images/bg_login.png'); background-size: cover; background-position: center; }"
-        "#register-box { background-color: #FFFFFF; border-radius: 20px; padding: 48px 72px; }"
-        "#register-title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; color: #101828; }",
-        -1, NULL)) {
-        g_print("Failed to load CSS\n");
-    }
-
-    GtkStyleContext *context = gtk_widget_get_style_context(window);
-    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-    GtkWidget *overlay = gtk_overlay_new();
-    gtk_container_add(GTK_CONTAINER(window), overlay);
-
-    GtkWidget *register_box = create_register_window();
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), register_box);
-    gtk_widget_set_halign(register_box, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(register_box, GTK_ALIGN_CENTER);
-
-    gtk_widget_show_all(window);
-    gtk_main();
 }

@@ -11,8 +11,13 @@
 GtkWidget *homepage_window ;
 
 void on_list_link_click(GtkWidget *widget, gpointer data) {
-        gtk_widget_destroy(homepage_window);
-        create_flight_list_widget();
+    GtkWidget *list_window = create_list_window();
+    if (!list_window) {
+        g_warning("Failed to create list window!");
+        return;
+    }
+
+    set_content(list_window);
 }
 static void on_window_realize(GtkWidget *widget, gpointer user_data) {
     GtkWidget *calendar = GTK_WIDGET(user_data);
@@ -287,66 +292,36 @@ GtkWidget* create_selection_box() {
 
 
 GtkWidget* create_homepage_window() {
-    GtkWidget *window, *header, *main_box, *overlay, *darea, *selection_box;
+    GtkWidget *main_box, *header, *overlay, *darea, *selection_box;
 
-    
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Homepage");
-
-    
-    GdkDisplay *display = gdk_display_get_default();
-    GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
-    GdkRectangle geometry;
-    gdk_monitor_get_geometry(monitor, &geometry);
-    gint screen_width = geometry.width;
-    gint screen_height = geometry.height;
-
-    
-    gtk_window_set_default_size(GTK_WINDOW(window), screen_width, screen_height);
-    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-
-    
-    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
-
-    
+    // Tạo một hộp chính chứa nội dung của trang homepage
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(window), main_box);
     gtk_widget_set_halign(main_box, GTK_ALIGN_FILL);
     gtk_widget_set_valign(main_box, GTK_ALIGN_FILL);
 
-    
+    // Tạo phần header
     GtkWidget *buttons[4];
     header = create_header(buttons);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
 
-    
+    // Tạo overlay
     overlay = gtk_overlay_new();
     gtk_box_pack_start(GTK_BOX(main_box), overlay, TRUE, TRUE, 0);
     gtk_widget_set_halign(overlay, GTK_ALIGN_FILL);
     gtk_widget_set_valign(overlay, GTK_ALIGN_FILL);
 
-    
+    // Vùng vẽ
     darea = gtk_drawing_area_new();
     g_signal_connect(darea, "draw", G_CALLBACK(on_draw_event), NULL);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), darea);
     gtk_widget_set_halign(darea, GTK_ALIGN_FILL);
     gtk_widget_set_valign(darea, GTK_ALIGN_FILL);
 
-    
+    // Tạo hộp lựa chọn
     selection_box = create_selection_box();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), selection_box);
     gtk_widget_set_halign(selection_box, GTK_ALIGN_FILL);
     gtk_widget_set_valign(selection_box, GTK_ALIGN_FILL);
 
-    
-    gtk_widget_show_all(window);
-
-    return window;
-}
-
-
-void create_homepage_widget () {
-    homepage_window = create_homepage_window();
-    gtk_main();
-
+    return main_box;
 }

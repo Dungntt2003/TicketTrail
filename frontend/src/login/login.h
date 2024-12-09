@@ -6,6 +6,5 @@
 GtkWidget *create_login_window();
 void on_login_clicked(GtkWidget *widget, gpointer data);
 void on_register_link_click(GtkWidget *widget, gpointer data);
-void create_login_widget();
 
 #endif 
