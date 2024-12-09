@@ -28,12 +28,8 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
     recv(sock, buffer, sizeof(buffer), 0);
     g_print("Received from server: %s\n", buffer);
     if (strcmp(buffer, "SUCCESS") == 0){
-        if (GTK_IS_WIDGET(data)) {
-            GtkWidget *current_window = GTK_WIDGET(data);
-            gtk_widget_destroy(window);
-
-        }
-        create_homepage_widget();
+        GtkWidget *homepage_widget = create_homepage_window();
+        set_content(homepage_widget);
     }
     else if (strcmp(buffer, "EMAIL_NOT_FOUND") == 0){
         gtk_label_set_text(GTK_LABEL(label_status), "Email not found, please register email");
@@ -47,8 +43,8 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
 }
 
 void on_register_link_click(GtkWidget *widget, gpointer data) {
-        gtk_widget_destroy(window);
-        create_register_widget();
+    GtkWidget *register_content = create_register_window();
+    set_content(register_content);
 }
 
 GtkWidget *create_login_window() {
@@ -114,29 +110,9 @@ gtk_css_provider_load_from_data(provider,
     GtkWidget *sign_up = gtk_button_new_with_label("Sign up?");
     gtk_widget_set_name(sign_up, "sign-up");
     gtk_box_pack_start(GTK_BOX(hbox_footer), sign_up, FALSE, FALSE, 0);
-    g_signal_connect(sign_up, "clicked", G_CALLBACK(on_register_link_click),window);
+    g_signal_connect(sign_up, "clicked", G_CALLBACK(on_register_link_click),login_box);
 
     gtk_box_pack_start(GTK_BOX(login_box), hbox_footer, FALSE, FALSE, 0);
 
     return login_box;
 }
-
-void create_login_widget() {
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Login");
-    gtk_window_fullscreen(GTK_WINDOW(window));
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    GtkWidget *overlay = gtk_overlay_new();
-    gtk_container_add(GTK_CONTAINER(window), overlay);
-
-    GtkWidget *login_box = create_login_window();
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), login_box);
-
-    gtk_widget_set_halign(login_box, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(login_box, GTK_ALIGN_CENTER);
-
-    gtk_widget_show_all(window);
-    gtk_main();
-}
-

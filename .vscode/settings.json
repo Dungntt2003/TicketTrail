@@ -1,6 +1,14 @@
 {
   "files.associations": {
     "socket.h": "c",
-    "homepage.h": "c"
+    "homepage.h": "c",
+    "ticket_detail.h": "c",
+    "list.h": "c",
+    "gtk.h": "c",
+    "component.h": "c",
+    "auth.h": "c",
+    "unistd.h": "c",
+    "global.h": "c",
+    "sha.h": "c"
   }
 }

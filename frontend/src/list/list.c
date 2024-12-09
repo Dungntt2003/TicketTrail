@@ -27,10 +27,8 @@ GtkWidget *list_window;
 
 //Link 
 void on_detail_link_click(GtkWidget *widget, gpointer data) {
-        gtk_widget_destroy(list_window);
-        window = create_ticket_detail_window();
-        gtk_widget_show_all(window);
-            gtk_main();
+    GtkWidget *detail_window = create_ticket_detail_window();
+    set_content(detail_window);
 }
 
 
@@ -129,34 +127,25 @@ GtkWidget* create_filter_box() {
 }
 // Hàm tạo list window
 GtkWidget* create_list_window() {
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Danh sách vé");
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-    
+    GtkWidget *main_box, *header, *filter_box, *ticket_list;
+
+    // Tạo hộp chính
+    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
     // Tạo header
     GtkWidget *buttons[4];
-    GtkWidget *header = create_header(buttons);
-
-    // Tạo main box
-    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // Đặt main_box là biến toàn cục
+    header = create_header(buttons);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
 
-        GtkWidget *filter_box = create_filter_box();
+    // Tạo hộp lọc
+    filter_box = create_filter_box();
     gtk_box_pack_start(GTK_BOX(main_box), filter_box, FALSE, FALSE, 0);
 
-    // Tạo nội dung vé
-    ticket_list = create_ticket_list(); // Đặt ticket_list là biến toàn cục
+    // Tạo danh sách vé
+    ticket_list = create_ticket_list();
     gtk_box_pack_start(GTK_BOX(main_box), ticket_list, TRUE, TRUE, 0);
 
-    gtk_container_add(GTK_CONTAINER(window), main_box);
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    return window;
+    return main_box;
 }
 
-// Hàm chính
-void create_flight_list_widget() {
-    list_window = create_list_window();
-    gtk_widget_show_all(list_window);
-    gtk_main();
-}
+

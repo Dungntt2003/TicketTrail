@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <gtk/gtk.h>
 #include "./server_com/server_com.h"
 #include "./register/register.h"
 #include "./global/global.h"
@@ -17,7 +18,11 @@ int main(int argc, char *argv[]) {
     sock = connect_to_server(SERVER_IP, PORT); 
     
     gtk_init(&argc, &argv);
-    create_register_widget();
+    GtkWidget *main_window = create_main_window();
+    gtk_widget_show_all(main_window);
+
+    GtkWidget *register_window = create_register_window();
+    set_content(register_window);
     gtk_main();
     close(sock);
     return 0;

@@ -349,32 +349,19 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
 
         return FALSE;
     }
-
-// Hàm tạo cửa sổ và hiển thị Ticket Detail
-// Hàm tạo cửa sổ và hiển thị Ticket Detail
 GtkWidget* create_ticket_detail_window() {
-    GtkWidget *drawing_area;
+    GtkWidget *drawing_area, *main_box;
 
-    // Tạo cửa sổ
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Ticket Detail");
+    // Tạo một box chính để chứa nội dung
+    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-    // Đặt cửa sổ ở chế độ toàn màn hình
-    gtk_window_fullscreen(GTK_WINDOW(window));
-
-    // Tắt tính năng thay đổi kích thước của cửa sổ
-    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-
-    // Vẽ trên cửa sổ
+    // Tạo khu vực vẽ
     drawing_area = gtk_drawing_area_new();
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_ticket_detail_draw), NULL);
-    gtk_container_add(GTK_CONTAINER(window), drawing_area);
 
-    return window;
+    // Thêm drawing_area vào main_box
+    gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
+
+    return main_box;
 }
 
-// void create_ticket_detail ()  {
-//     GtkWidget *ticket_detail = create_ticket_detail_window();
-//     gtk_widget_show_all(ticket_detail);
-//     gtk_main();
-// }
