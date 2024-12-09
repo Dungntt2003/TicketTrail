@@ -5,13 +5,8 @@
 #include <unistd.h>
 #include "../auth/auth.h"
 #include "../homepage/homepage.h"
-#define MAX_LENGTH 1024
 #include "../register/register.h"
-
-GtkWidget *entry_email, *entry_password, *label_status;
-GtkWidget *window;
-char buffer[MAX_LENGTH];
-int sock;
+#include "../global/global.h"
 
 void on_login_clicked(GtkWidget *widget, gpointer data) {
     const char *email = gtk_entry_get_text(GTK_ENTRY(entry_email));
@@ -53,7 +48,7 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
 
 void on_register_link_click(GtkWidget *widget, gpointer data) {
         gtk_widget_destroy(window);
-        create_register_widget(sock);
+        create_register_widget();
 }
 
 GtkWidget *create_login_window() {
@@ -126,12 +121,9 @@ gtk_css_provider_load_from_data(provider,
     return login_box;
 }
 
-void create_login_widget(int socket) {
-    sock = socket;
+void create_login_widget() {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
-    // gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-    // gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_fullscreen(GTK_WINDOW(window));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 

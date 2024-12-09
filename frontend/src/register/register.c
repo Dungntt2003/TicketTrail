@@ -5,17 +5,11 @@
 #include "register.h"
 #include "../auth/auth.h"
 #include "../login/login.h"
-#define MAX_LENGTH 1024
+#include "../global/global.h"
 
-GtkWidget *entry_email;
-GtkWidget *entry_password;
 GtkWidget *entry_confirm_password;
 GtkWidget *entry_username;
 GtkWidget *entry_phone;
-GtkWidget *label_status;
-GtkWidget *window;
-int sock;
-char buffer[MAX_LENGTH];
 
 void on_register(GtkWidget *widget, gpointer data) {
     const char *email = gtk_entry_get_text(GTK_ENTRY(entry_email));
@@ -157,8 +151,7 @@ GtkWidget* create_register_window() {
     return register_box;
 }
 
-void create_register_widget(int socket) {
-    sock = socket;
+void create_register_widget() {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Register");
     // gtk_window_set_default_size(GTK_WINDOW(window), 400, 600);

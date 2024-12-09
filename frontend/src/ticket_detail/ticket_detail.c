@@ -5,7 +5,8 @@
 #include <math.h>
 #include <string.h>
 #include <arpa/inet.h>
-#define MAX_LENGTH 1024
+#include "../global/global.h"
+
 
 // Các giá trị có thể thay đổi
 const char *departure_city = "HA NOI";
@@ -16,8 +17,6 @@ const char *selected_date = "08/12/2024";
 const char *selected_time = "9:30 PM";   
 const char *ticket_price = "$240"; 
 
-int sock;
-char buffer[MAX_LENGTH];
 
 static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
     GdkPixbuf *bg_pixbuf;
@@ -353,8 +352,8 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
 
 // Hàm tạo cửa sổ và hiển thị Ticket Detail
 // Hàm tạo cửa sổ và hiển thị Ticket Detail
-GtkWidget* create_ticket_detail_window(int socket) {
-    GtkWidget *window, *drawing_area;
+GtkWidget* create_ticket_detail_window() {
+    GtkWidget *drawing_area;
 
     // Tạo cửa sổ
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -373,3 +372,9 @@ GtkWidget* create_ticket_detail_window(int socket) {
 
     return window;
 }
+
+// void create_ticket_detail ()  {
+//     GtkWidget *ticket_detail = create_ticket_detail_window();
+//     gtk_widget_show_all(ticket_detail);
+//     gtk_main();
+// }
