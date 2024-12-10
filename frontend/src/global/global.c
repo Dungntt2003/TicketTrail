@@ -1,9 +1,31 @@
 #include "global.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 GtkWidget *entry_email, *entry_password, *label_status;
 char buffer[MAX_LENGTH];
 int sock;
 GtkWidget *window;
 GtkWidget *content_area;
+const char *airports[] = {
+       "SGN - Tân Sơn Nhất - Hồ Chí Minh",
+        "HAN - Nội Bài - Hà Nội",
+        "CXR - Cam Ranh - Khánh Hòa",
+        "DAD - Đà Nẵng - Đà Nẵng",
+        "HUI - Phú Bài - Thừa Thiên Huế",
+        "UIH - Phù Cát - Bình Định",
+        "VCL - Chu Lai - Quảng Nam",
+        "VCS - Côn Đảo - Bà Rịa-Vũng Tàu",
+        "THD - Trường Sa - Khánh Hòa",
+        "DLI - Liên Khương - Lâm Đồng",
+        "VKG - Quy Nhơn - Bình Định",
+        "PQC - Phú Quốc - Kiên Giang",
+        "VCA - Cần Thơ - Cần Thơ",
+        "CAH - Cát Bi - Hải Phòng",
+        "CJJ - Chu Lai - Quảng Nam"
+    };
+
+const int airport_count = sizeof(airports) / sizeof(airports[0]);
 
 // Hàm tạo cửa sổ chính
 GtkWidget* create_main_window() {
@@ -54,3 +76,10 @@ void set_content(GtkWidget *new_content) {
     gtk_widget_show_all(window);
 }
 
+int is_number(const char *str) {
+    char *endptr;
+    strtol(str, &endptr, 10);  // Chuyển chuỗi thành số (hệ thập phân)
+
+    // Kiểm tra xem chuỗi có phải là một số hợp lệ
+    return *endptr == '\0';  // Nếu endptr trỏ đến ký tự kết thúc chuỗi, tức là chuỗi hợp lệ
+}

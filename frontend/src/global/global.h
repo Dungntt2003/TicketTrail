@@ -11,8 +11,11 @@ extern char buffer[MAX_LENGTH];
 extern int sock;
 extern GtkWidget *window;
 extern GtkWidget *content_area;
+extern const char *airports[];
+extern const int airport_count;
 
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
+int is_number(const char *str);
 
 #endif 

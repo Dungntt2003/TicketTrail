@@ -4,20 +4,55 @@
 #include <pango/pangocairo.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include "../list/list.h"
 #include "../component/component.h"
 #include "../global/global.h"
 
 GtkWidget *homepage_window ;
+GtkWidget *input_from, *input_to, *input_departure, *input_return, *combo_box, *input_traveller;
 
 void on_list_link_click(GtkWidget *widget, gpointer data) {
-    GtkWidget *list_window = create_list_window();
-    if (!list_window) {
-        g_warning("Failed to create list window!");
-        return;
+    const char *traveller = gtk_entry_get_text(GTK_ENTRY(input_traveller));
+    const char *selected_class = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo_box));
+    const char *date_text, *date_return_text;
+    GList *children = gtk_container_get_children(GTK_CONTAINER(input_departure));
+    GtkWidget *entry = GTK_WIDGET(g_list_nth_data(children, 0)); 
+    const char *from = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(input_from));
+    const char *to = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(input_to));
+    if (GTK_IS_ENTRY(entry)) {
+        date_text = gtk_entry_get_text(GTK_ENTRY(entry));
+    } else {
+        g_print("No entry found in input_departure\n");
     }
 
-    set_content(list_window);
+    g_list_free(children);
+
+    GList *children1 = gtk_container_get_children(GTK_CONTAINER(input_return));
+    GtkWidget *entry1 = GTK_WIDGET(g_list_nth_data(children1, 0)); 
+
+    if (GTK_IS_ENTRY(entry1)) {
+        date_return_text = gtk_entry_get_text(GTK_ENTRY(entry1));
+    } else {
+        g_print("No entry found in input_return\n");
+    }
+
+    g_list_free(children1);
+
+    g_print("%s %s %s %s %s %s\n", from, to, traveller, selected_class, date_text, date_return_text);
+     
+    if (strlen(from) == 0 || strlen(to) == 0 || strlen(selected_class) == 0 || strlen(date_text) == 0 || strlen(traveller) == 0){
+        gtk_label_set_text(GTK_LABEL(label_status), "All fields are required!");
+        return;
+    }
+    if (!is_number(traveller)){
+        gtk_label_set_text(GTK_LABEL(label_status), "Number people must be a number!");
+        return;
+    }
+    if (strcmp(from, to) == 0){
+        gtk_label_set_text(GTK_LABEL(label_status), "Departure airport and arrive airport must be different!");
+        return;
+    }
 }
 static void on_window_realize(GtkWidget *widget, gpointer user_data) {
     GtkWidget *calendar = GTK_WIDGET(user_data);
@@ -152,6 +187,7 @@ GtkWidget* create_input_box_with_date_picker(const gchar *placeholder) {
 }
 
 
+
 GtkWidget* create_label(const gchar *text) {
     GtkWidget *label = gtk_label_new(text);
     
@@ -186,22 +222,33 @@ GtkWidget* create_selection_box() {
 
         if (i == 0) {
             GtkWidget *label_from = create_label("From");
-            GtkWidget *input_from = create_input_box("   Where are you from?");
 
-            GtkWidget *label_to = create_label("To");
-            GtkWidget *input_to = create_input_box("   Where are you going?");
-
+            input_from = gtk_combo_box_text_new(); 
+            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_from), "Please choose a airport");
+            for (int i = 0; i < airport_count; i++) {
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_from), airports[i]);   
+            }
+            gtk_combo_box_set_active(GTK_COMBO_BOX(input_from), 0); 
             gtk_box_pack_start(GTK_BOX(section_box), label_from, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_from, FALSE, FALSE, 0);
+
+
+            GtkWidget *label_to = create_label("To");
+            input_to = gtk_combo_box_text_new(); 
+            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_to), "Please choose a airport");
+            for (int i = 0; i < airport_count; i++) {
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_to), airports[i]);   
+            }
+            gtk_combo_box_set_active(GTK_COMBO_BOX(input_to), 0); 
             gtk_box_pack_start(GTK_BOX(section_box), label_to, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_to, FALSE, FALSE, 0);
         }
         else if (i == 1) {
             GtkWidget *label_departure = create_label("Departure");
-            GtkWidget *input_departure = create_input_box_with_date_picker("Choose Departure Date");
+            input_departure = create_input_box_with_date_picker("Choose Departure Date");
 
             GtkWidget *label_return = create_label("Return");
-            GtkWidget *input_return = create_input_box_with_date_picker("+ Add Return Date (Optional)");
+            input_return = create_input_box_with_date_picker("+ Add Return Date (Optional)");
 
             
             gtk_box_pack_start(GTK_BOX(section_box), label_departure, FALSE, FALSE, 0);
@@ -210,8 +257,8 @@ GtkWidget* create_selection_box() {
             gtk_box_pack_start(GTK_BOX(section_box), input_return, FALSE, FALSE, 0);
         }
         else if (i == 2) {
-            GtkWidget *label_traveller = create_label("Traveller");
-            GtkWidget *input_traveller = create_input_box("Choose Traveller Number");
+            GtkWidget *label_traveller = create_label("Number people");
+            input_traveller = create_input_box("Choose number people");
 
             gtk_box_pack_start(GTK_BOX(section_box), label_traveller, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_traveller, FALSE, FALSE, 0);
@@ -220,7 +267,7 @@ GtkWidget* create_selection_box() {
             GtkWidget *label_class = create_label("Class");
 
             
-            GtkWidget *combo_box = gtk_combo_box_text_new();
+            combo_box = gtk_combo_box_text_new();
             
             
             gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Choose Class");
@@ -257,6 +304,7 @@ GtkWidget* create_selection_box() {
             gtk_box_pack_start(GTK_BOX(section_box), combo_box, FALSE, FALSE, 0);
         }
         else if (i == 4) {
+        
             GtkWidget *search_button = gtk_button_new_with_label("Search Flight");
             gtk_widget_set_name(search_button, "search_button");
         g_signal_connect(search_button, "clicked", G_CALLBACK(on_list_link_click),homepage_window);
@@ -281,6 +329,20 @@ GtkWidget* create_selection_box() {
             gtk_style_context_add_provider(gtk_widget_get_style_context(search_button), GTK_STYLE_PROVIDER(search_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
             gtk_widget_set_margin_top(search_button, 35);   
             gtk_box_pack_start(GTK_BOX(section_box), search_button, FALSE, FALSE, 0);
+
+            label_status = gtk_label_new("");
+            gtk_box_pack_start(GTK_BOX(section_box), label_status, FALSE, FALSE, 0);
+            GtkCssProvider *css_provider_label = gtk_css_provider_new();
+            gtk_css_provider_load_from_data(css_provider_label,
+                "label {"
+                "   color: red;"  // Đặt màu chữ thành đỏ
+                "}",
+                -1, NULL);
+
+            // Áp dụng CSS cho label
+            gtk_style_context_add_provider(gtk_widget_get_style_context(label_status),
+                GTK_STYLE_PROVIDER(css_provider_label), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
         }
 
         

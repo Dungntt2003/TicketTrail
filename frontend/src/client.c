@@ -7,6 +7,7 @@
 #include "./server_com/server_com.h"
 #include "./register/register.h"
 #include "./global/global.h"
+#include "./homepage/homepage.h"
 
 
 #define PORT 8080
@@ -21,8 +22,10 @@ int main(int argc, char *argv[]) {
     GtkWidget *main_window = create_main_window();
     gtk_widget_show_all(main_window);
 
-    GtkWidget *register_window = create_register_window();
-    set_content(register_window);
+    // GtkWidget *register_window = create_register_window();
+    // set_content(register_window);
+    GtkWidget *homepage = create_homepage_window();
+    set_content(homepage);
     gtk_main();
     close(sock);
     return 0;
