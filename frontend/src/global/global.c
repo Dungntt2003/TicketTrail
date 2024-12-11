@@ -7,6 +7,8 @@ char buffer[MAX_LENGTH];
 int sock;
 GtkWidget *window;
 GtkWidget *content_area;
+const int airport_count;
+Flight flights[MAX_LENGTH];
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",

@@ -6,20 +6,24 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "./auth/auth.h"
-#include "./filter/filter.h"
+#include "./flight/flight.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 char *token;
-  Flight flights[MAX_FLIGHTS] = {
-        {"Hanoi", "Ho Chi Minh", "2023-12-01", 2, "Economy", 100.50},
-        {"Hanoi", "Da Nang", "2023-12-05", 1, "Business", 150.75},
-        {"Hanoi", "Ho Chi Minh", "2023-12-02", 3, "Economy", 90.00},
-        {"Hanoi", "Nha Trang", "2023-12-03", 1, "First", 200.00}
-    };
+Flight *flights = NULL;
+int count_flight = 0;
 
-    int flightCount = 4;
-
+void send_flights(int client_sock, Flight *flights, int count) {
+    char buffer[1024];
+    for (int i = 0; i < count; i++) {
+        snprintf(buffer, sizeof(buffer), "Flight ID: %s\nDeparture time: %s\nDuration times: %d\nCapacity: %d\nPrice: %d\nAirplane name: %s\nDeparture airport: %s\nArrival airport: %s\nEconomy: %d\nBusiness: %d\nFirst class: %d\n\n",
+                 flights[i].flight_id, flights[i].departure_time, flights[i].duration_minutes, flights[i].capacity, flights[i].price, 
+                 flights[i].airplane_name, flights[i].departure_airport, flights[i].arrival_airport, 
+                 flights[i].available_economy, flights[i].available_business, flights[i].available_first_class);
+        send(client_sock, buffer, strlen(buffer), 0);
+    }
+}
 
 
 int calculate_checksum(const char *data) {
@@ -111,7 +115,12 @@ void *handle_client(void *client_socket) {
             }
         }
         else {
-           
+            if (fetch_flights(&flights, &count_flight) != 0) {
+                fprintf(stderr, "Failed to fetch flights.\n");
+            }
+            if (strncmp(buffer, "GET FLIGHTS", strlen("GET FLIGHTS")) == 0){
+                send_flights(sock, flights, count_flight);
+            }
         }
     }
 

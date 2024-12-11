@@ -1,3 +1,4 @@
+
 CREATE DATABASE ticketrail;
 USE ticketrail;
 
@@ -12,62 +13,100 @@ CREATE TABLE users (
 );
 
 CREATE TABLE airlines (
-    airline_id INT PRIMARY KEY AUTO_INCREMENT,
+    airline_id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255),
-    description VARCHAR(255),
     contact_email VARCHAR(255),
     contact_phone VARCHAR(255),
     logo_url VARCHAR(255)
 );
 
+INSERT INTO airlines (airline_id, name) VALUES
+('VN', 'Vietnam Airlines'),
+('VJ', 'VietJet Air'),
+('QH', 'Bamboo Airways'),
+('V8', 'Vietravel Airlines');
+
 CREATE TABLE airports (
-    airport_id INT PRIMARY KEY AUTO_INCREMENT,
+    airport_id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255),
-    code VARCHAR(10),
-    city VARCHAR(255),
-    country VARCHAR(255)
+    city VARCHAR(255)
 );
 
+INSERT INTO airports (airport_id, name, city) VALUES
+('SGN', 'Tân Sơn Nhất', 'Hồ Chí Minh'),
+('HAN', 'Nội Bài', 'Hà Nội'),
+('CXR', 'Cam Ranh', 'Khánh Hòa'),
+('DAD', 'Đà Nẵng', 'Đà Nẵng'),
+('HUI', 'Phú Bài', 'Thừa Thiên Huế'),
+('UIH', 'Phù Cát', 'Bình Định'),
+('VCL', 'Chu Lai', 'Quảng Nam'),
+('VCS', 'Côn Đảo', 'Bà Rịa-Vũng Tàu'),
+('THD', 'Trường Sa', 'Khánh Hòa'),
+('DLI', 'Liên Khương', 'Lâm Đồng'),
+('VKG', 'Quy Nhơn', 'Bình Định'),
+('PQC', 'Phú Quốc', 'Kiên Giang'),
+('VCA', 'Cần Thơ', 'Cần Thơ'),
+('CAH', 'Cát Bi', 'Hải Phòng'),
+('CJJ', 'Chu Lai', 'Quảng Nam');
+
 CREATE TABLE airplanes (
-    airplane_id INT PRIMARY KEY AUTO_INCREMENT,
-    airline_id INT,
+    airplane_id VARCHAR(255) PRIMARY KEY,
+    airline_id VARCHAR(255),
+    price int,
     capacity INT,
     FOREIGN KEY (airline_id) REFERENCES airlines(airline_id) ON DELETE CASCADE
 );
 
-CREATE TABLE seats (
-    seat_id INT PRIMARY KEY AUTO_INCREMENT,
-    seat_code VARCHAR(255),
-    seat_class VARCHAR(255),
-    price DECIMAL(10, 2),
-    airplane_id INT,
-    FOREIGN KEY (airplane_id) REFERENCES airplanes(airplane_id) ON DELETE CASCADE
-);
+INSERT INTO airplanes (airplane_id, airline_id, capacity)
+VALUES
+    ('VN0001', 'VN', 150),
+    ('VN0002', 'VN', 120),
+    ('VN0003', 'VN', 180),
+    ('VN0004', 'VN', 110),
+    ('VN0005', 'VN', 200),
+
+    ('VJ0001', 'VJ', 140),
+    ('VJ0002', 'VJ', 130),
+    ('VJ0003', 'VJ', 170),
+    ('VJ0004', 'VJ', 160),
+    ('VJ0005', 'VJ', 190),
+
+    ('V8001', 'V8', 125),
+    ('V8002', 'V8', 135),
+    ('V8003', 'V8', 145),
+    ('V8004', 'V8', 155),
+    ('V8005', 'V8', 165),
+
+    ('QH0001', 'QH', 100),
+    ('QH0002', 'QH', 105),
+    ('QH0003', 'QH', 110),
+    ('QH0004', 'QH', 115),
+    ('QH0005', 'QH', 120);
 
 CREATE TABLE flights (
-    flight_id INT PRIMARY KEY AUTO_INCREMENT,
-    flight_number VARCHAR(255),
-    departure_airport_id INT,
-    arrival_airport_id INT,
+    flight_id varchar(255) PRIMARY KEY,
+    departure_airport varchar(255),
+    arrival_airport VARCHAR(255),
     departure_time DATETIME,
-    arrival_time DATETIME,
     duration_minutes INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
-    airplane_id INT,
+    airplane_id varchar(255),
     FOREIGN KEY (airplane_id) REFERENCES airplanes(airplane_id) ON DELETE CASCADE,
-    FOREIGN KEY (departure_airport_id) REFERENCES airports(airport_id) ON DELETE CASCADE,
-    FOREIGN KEY (arrival_airport_id) REFERENCES airports(airport_id) ON DELETE CASCADE
+    FOREIGN KEY (departure_airport) REFERENCES airports(airport_id) ON DELETE CASCADE,
+    FOREIGN KEY (arrival_airport) REFERENCES airports(airport_id) ON DELETE CASCADE
 );
 
-CREATE TABLE seats_flights (
-    seat_flight_id INT PRIMARY KEY AUTO_INCREMENT,
-    seat_id INT,
-    flight_id INT,
-    status INT,
-    FOREIGN KEY (seat_id) REFERENCES seats(seat_id) ON DELETE CASCADE,
-    FOREIGN KEY (flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE
-);
+insert into flights (flight_id, departure_airport, arrival_airport, departure_time, duration_minutes, airplane_id)
+values ('VN001', 'SGN', 'HAN', '2024-12-13 17:00', 150, 'VN0001'),
+	('VN002', 'SGN', 'DAD', '2024-12-15 16:00', 170, 'VN0001'),
+    ('VN003', 'SGN', 'HUI', '2024-12-17 16:00', 200, 'VN0001'),
+    ('VN004', 'SGN', 'THD', '2024-12-14 17:00', 100, 'VN0001'),
+    ('VN005', 'SGN', 'PQC', '2024-12-17 16:00', 190, 'VN0001'),
+    ('VN006', 'SGN', 'PQC', '2024-12-17 2:00', 165, 'VN0001'),
+    ('VN007', 'SGN', 'PQC', '2024-12-17 3:30', 140, 'VN0002');
+
+
 
 CREATE TABLE bookings (
     booking_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -77,70 +116,15 @@ CREATE TABLE bookings (
     updated_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INT,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    flight_id varchar(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    foreign key (flight_id) references flights(flight_id) on delete cascade
 );
 
 CREATE TABLE booking_details (
     booking_detail_id INT PRIMARY KEY AUTO_INCREMENT,
     booking_id INT,
-    seat_id INT,
-    FOREIGN KEY (seat_id) REFERENCES seats(seat_id) ON DELETE CASCADE,
+    type varchar(255),
+    seat_code varchar(255),
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
 );
-
-CREATE TABLE payments (
-    payment_id INT PRIMARY KEY AUTO_INCREMENT,
-    booking_id INT,
-    amount DECIMAL(10, 2),
-    payment_method VARCHAR(255),
-    payment_status VARCHAR(255),
-    payment_time TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INT,
-    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
-CREATE TABLE feedbacks (
-    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
-    flight_id INT,
-    user_id INT,
-    rating DECIMAL(2, 1),
-    comment TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
-
-INSERT INTO airlines (name, description, contact_email, contact_phone, logo_url) VALUES
-('Vietnam Airlines', 'Hãng hàng không quốc gia Việt Nam', 'info@vietnamairlines.com', '1900 1100', 'http://example.com/logo_vn.png'),
-('Bamboo Airways', 'Hãng hàng không tư nhân đầu tiên tại Việt Nam', 'info@bambooairways.com', '1900 1800', 'http://example.com/logo_bamboo.png'),
-('VietJet Air', 'Hãng hàng không giá rẻ tại Việt Nam', 'info@vietjetair.com', '1900 1886', 'http://example.com/logo_vietjet.png');
-
-INSERT INTO airports (name, code, city, country) VALUES
-('Nội Bài International Airport', 'HAN', 'Hà Nội', 'Việt Nam'),
-('Tân Sơn Nhất International Airport', 'SGN', 'Thành phố Hồ Chí Minh', 'Việt Nam'),
-('Đà Nẵng International Airport', 'DAD', 'Đà Nẵng', 'Việt Nam'),
-('Phú Quốc International Airport', 'PQC', 'Phú Quốc', 'Việt Nam');
-
-INSERT INTO airplanes (airline_id, capacity) VALUES
-(1, 180),  -- Vietnam Airlines
-(2, 190),  -- Bamboo Airways
-(3, 200);  -- VietJet Air
-
-INSERT INTO flights (flight_number, departure_airport_id, arrival_airport_id, departure_time, arrival_time, duration_minutes, airplane_id) VALUES
-('VN123', 1, 2, '2024-12-01 10:00:00', '2024-12-01 12:00:00', 120, 1),  -- Vietnam Airlines
-('BB456', 2, 3, '2024-12-01 15:00:00', '2024-12-01 17:00:00', 120, 2),  -- Bamboo Airways
-('VJ789', 3, 4, '2024-12-01 09:00:00', '2024-12-01 10:30:00', 90, 3);   -- VietJet Air
-
-INSERT INTO seats (seat_code, seat_class, price, airplane_id) VALUES
-('1A', 'Business', 200.00, 1),
-('1B', 'Business', 200.00, 1),
-('2A', 'Economy', 100.00, 1),
-('2B', 'Economy', 100.00, 1),
-('3A', 'Economy', 100.00, 2),
-('3B', 'Economy', 100.00, 2),
-('4A', 'Economy', 50.00, 3),
-('4B', 'Economy', 50.00, 3),
-('5A', 'Economy', 50.00, 3);
