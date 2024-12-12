@@ -9,22 +9,36 @@
 #include "./flight/flight.h"
 
 #define PORT 8080
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 char *token;
 Flight *flights = NULL;
 int count_flight = 0;
 
 void send_flights(int client_sock, Flight *flights, int count) {
-    char buffer[1024];
+    char buffer[65536]; 
+    int offset = 0;  
     for (int i = 0; i < count; i++) {
-        snprintf(buffer, sizeof(buffer), "Flight ID: %s\nDeparture time: %s\nDuration times: %d\nCapacity: %d\nPrice: %d\nAirplane name: %s\nDeparture airport: %s\nArrival airport: %s\nEconomy: %d\nBusiness: %d\nFirst class: %d\n\n",
-                 flights[i].flight_id, flights[i].departure_time, flights[i].duration_minutes, flights[i].capacity, flights[i].price, 
-                 flights[i].airplane_name, flights[i].departure_airport, flights[i].arrival_airport, 
-                 flights[i].available_economy, flights[i].available_business, flights[i].available_first_class);
-        send(client_sock, buffer, strlen(buffer), 0);
+        int bytes_written = snprintf(buffer + offset, sizeof(buffer) - offset,
+                                     "Id %s\nTime %s\nDuration %d\nCapacity %d\nPrice %d\nName %s\nDeparture %s\nArrival %s\nEconomy %d\nBusiness %d\nFirst %d\n\n",
+                                     flights[i].flight_id, flights[i].departure_time, flights[i].duration_minutes, flights[i].capacity, flights[i].price,
+                                     flights[i].airplane_name, flights[i].departure_airport, flights[i].arrival_airport,
+                                     flights[i].available_economy, flights[i].available_business, flights[i].available_first_class);
+
+        if (bytes_written < 0 || offset + bytes_written >= sizeof(buffer)) {
+            fprintf(stderr, "Buffer overflow or formatting error!\n");
+            return; 
+        }
+
+        offset += bytes_written; 
+    }
+
+    int bytes_sent = send(client_sock, buffer, offset, 0);
+    if (bytes_sent < 0) {
+        perror("Failed to send flights data");
+    } else {
+        printf("Sent %d bytes of flight data.\n", bytes_sent);
     }
 }
-
 
 int calculate_checksum(const char *data) {
     int checksum = 0;
@@ -60,7 +74,10 @@ void *handle_client(void *client_socket) {
     int read_size;
 
     while (1) {
-        if (!is_logged_in){
+            if (fetch_flights(&flights, &count_flight) != 0) {
+                fprintf(stderr, "Failed to fetch flights.\n");
+            }
+        // if (!is_logged_in){
            recv(sock, buffer, sizeof(buffer), 0);
            buffer[strcspn(buffer, "\n")] = 0;
            if (strncmp(buffer, "REGISTER", strlen("REGISTER")) == 0){
@@ -112,16 +129,14 @@ void *handle_client(void *client_socket) {
                     }
                     else send(sock, "FAILED", strlen("FAILED") + 1, 0);
                 }
-            }
+            // }
         }
-        else {
-            if (fetch_flights(&flights, &count_flight) != 0) {
-                fprintf(stderr, "Failed to fetch flights.\n");
-            }
+        // else {
             if (strncmp(buffer, "GET FLIGHTS", strlen("GET FLIGHTS")) == 0){
+                send(sock, &count_flight, sizeof(count_flight), 0);
                 send_flights(sock, flights, count_flight);
             }
-        }
+        // }
     }
 
     close(sock);

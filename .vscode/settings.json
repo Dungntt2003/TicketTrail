@@ -9,6 +9,9 @@
     "auth.h": "c",
     "unistd.h": "c",
     "global.h": "c",
-    "sha.h": "c"
+    "sha.h": "c",
+    "flight.h": "c",
+    "server_com.h": "c",
+    "pango.h": "c"
   }
 }

@@ -3,7 +3,8 @@
 #include <gtk/gtk.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-#define MAX_LENGTH 1024
+#include <stdbool.h>
+#define MAX_LENGTH 4096
 #define M_PI 3.14159265358979323846
 
 typedef struct {
@@ -29,8 +30,16 @@ extern const char *airports[];
 extern const int airport_count;
 extern  Flight flights[MAX_LENGTH];
 extern  int flight_count;
+extern Flight tem_flights[MAX_LENGTH];
+extern int tem_flight_count;
+extern Flight detail_flight;
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
 int is_number(const char *str);
+char* format_number_with_separator(int number, char separator);
+char* extract_middle_string(const char *input);
+void split_date_time(const char *input, char *date, char *time);
+bool checkHaveSeat(int available_economy, int available_business, int available_first,const char *type, int number_seat);
+void filter_flights(const Flight *flights, int flight_count, Flight *temp_flight, int *temp_count_flight, const char *departure, const char *arrival, const char *date,const char *class,const int number_seat);
 
 #endif 

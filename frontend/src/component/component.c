@@ -2,14 +2,28 @@
 #include "component.h"
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
+#include "../global/global.h"
+#include "../homepage/homepage.h"
+void on_home_button_clicked(GtkWidget *widget, gpointer data) {
+    if (widget == NULL) {
+        g_print("Error: widget is NULL\n");
+        return;
+    }
+    g_print("Home button clicked!\n");
+    GtkWidget *homepage_widget = create_homepage_window();
+    set_content(homepage_widget);
+}
 
 static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
     GtkWidget **buttons = (GtkWidget **)user_data;
-
+    
+    if (buttons == NULL) {
+        g_print("Error: buttons array is NULL\n");
+        return;
+    }
     
     if (gtk_toggle_button_get_active(button)) {
         for (int i = 0; buttons[i] != NULL; i++) {
-            
             if (buttons[i] != GTK_WIDGET(button)) {
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(buttons[i]), FALSE);
             }
@@ -107,6 +121,7 @@ GtkWidget* create_header(GtkWidget **buttons) {
     g_signal_connect(home_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     g_signal_connect(ticket_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     g_signal_connect(account_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
+    g_signal_connect(home_button, "clicked", G_CALLBACK(on_home_button_clicked), NULL);
 
     return header;
 }

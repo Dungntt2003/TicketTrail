@@ -2,11 +2,13 @@
 #define SERVER_COM_H
 
 #include <stddef.h>
+#include "../global/global.h"
 
 int connect_to_server(const char *server_ip, int port);
 
 void send_to_server(int sock, const void *data, size_t size);
 
 void recv_from_server(int sock, void *buffer, size_t size);
+void parse_flight_data(char *data, Flight *flights) ;
 
 #endif 

@@ -5,14 +5,30 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include "../list/list.h"
 #include "../component/component.h"
 #include "../global/global.h"
+#include "../server_com/server_com.h"
+#include  "../list/list.h"
 
 GtkWidget *homepage_window ;
 GtkWidget *input_from, *input_to, *input_departure, *input_return, *combo_box, *input_traveller;
-
+int bytes_received; 
 void on_list_link_click(GtkWidget *widget, gpointer data) {
+    send(sock, "GET FLIGHTS", strlen("GET FLIGHTS"), 0);
+    recv(sock, &flight_count, sizeof(flight_count), 0);
+    printf("Number of flights: %d\n", flight_count);
+        int bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+            printf("Failed to receive flight data.\n");
+        }
+
+        buffer[bytes_received] = '\0';
+        printf("Received flight: %s\n", buffer);
+
+    parse_flight_data(buffer,flights);
+    for (int i = 0; i < flight_count; i++){
+        printf("ID of flight: %s\n", flights[i].flight_id);
+    }
     const char *traveller = gtk_entry_get_text(GTK_ENTRY(input_traveller));
     const char *selected_class = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo_box));
     const char *date_text, *date_return_text;
@@ -53,6 +69,20 @@ void on_list_link_click(GtkWidget *widget, gpointer data) {
         gtk_label_set_text(GTK_LABEL(label_status), "Departure airport and arrive airport must be different!");
         return;
     }
+    
+    filter_flights(flights, flight_count, tem_flights, &tem_flight_count, from, to, date_text, selected_class, atoi(traveller));
+    for (int i = 0; i < tem_flight_count; i++){
+        printf("ID of flight: %s\n", tem_flights[i].flight_id);
+    }
+    if (tem_flight_count == 0) {
+        g_print("No flight\n");
+    }
+    GtkWidget *list_window = create_list_window();
+    if (!list_window) {
+        g_warning("Failed to create list window!");
+        return;
+    }
+    set_content(list_window);
 }
 static void on_window_realize(GtkWidget *widget, gpointer user_data) {
     GtkWidget *calendar = GTK_WIDGET(user_data);
@@ -96,7 +126,7 @@ static void on_calendar_day_selected(GtkCalendar *calendar, gpointer user_data) 
     gtk_calendar_get_date(calendar, &year, &month, &day);
     
     
-    g_snprintf(date_str, sizeof(date_str), "%02d/%02d/%04d", month + 1, day, year);
+    g_snprintf(date_str, sizeof(date_str), "%04d-%02d-%02d", year, month + 1, day);
     
     
     gtk_entry_set_text(GTK_ENTRY(input_box), date_str);

@@ -2,23 +2,10 @@
 #include "list.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include  <string.h>
 #include "../ticket_detail/ticket_detail.h"
 #include "../component/component.h"
 #include "../global/global.h"
-
-// Dữ liệu chuyến bay mẫu
-static Flight flights[MAX_FLIGHTS] = {
-    {"Airline A", "10:00", "12:00", "Economy", 100.0},
-    {"Airline B", "14:00", "16:00", "Business", 200.0},
-    {"Airline C", "09:00", "11:00", "First Class", 300.0},
-    {"Airline D", "15:00", "17:00", "Economy", 150.0},
-    {"Airline E", "08:00", "10:00", "Business", 250.0},
-    {"Airline F", "11:00", "13:00", "Economy", 120.0},
-    {"Airline G", "12:00", "14:00", "Business", 220.0},
-    {"Airline H", "13:00", "15:00", "First Class", 320.0},
-    {"Airline I", "16:00", "18:00", "Economy", 130.0},
-    {"Airline J", "17:00", "19:00", "Business", 230.0}
-};
 
 // Biến toàn cục
 GtkWidget *ticket_list; // Danh sách vé
@@ -27,6 +14,14 @@ GtkWidget *list_window;
 
 //Link 
 void on_detail_link_click(GtkWidget *widget, gpointer data) {
+     char *flight_id = (char *)data;
+     g_print("Check id: %s\n", flight_id);
+     for (int i = 0; i < tem_flight_count; i++){
+        if (strcmp(tem_flights[i].flight_id, flight_id) == 0){
+            detail_flight = tem_flights[i];
+        }
+     }
+
     GtkWidget *detail_window = create_ticket_detail_window();
     set_content(detail_window);
 }
@@ -35,19 +30,18 @@ void on_detail_link_click(GtkWidget *widget, gpointer data) {
 // Hàm tạo nội dung vé
 GtkWidget* create_ticket_list() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    for (int i = 0; i < MAX_FLIGHTS; i++) {
+    for (int i = 0; i < tem_flight_count; i++) {
         GtkWidget *ticket_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         
-        // Tạo các label cho thông tin vé
-        GtkWidget *airline_label = gtk_label_new(flights[i].airline);
-        GtkWidget *departure_time_label = gtk_label_new(flights[i].departure_time);
-        GtkWidget *arrival_time_label = gtk_label_new(flights[i].arrival_time);
-        GtkWidget *class_label = gtk_label_new(flights[i].class);
-        GtkWidget *price_label = gtk_label_new(g_strdup_printf("$%.2f", flights[i].price));
+        GtkWidget *airline_label = gtk_label_new(tem_flights[i].airplane_name);
+        GtkWidget *departure_time_label = gtk_label_new(tem_flights[i].departure_time);
+        GtkWidget *arrival_time_label = gtk_label_new(extract_middle_string(tem_flights[i].departure_airport));
+        GtkWidget *class_label = gtk_label_new(extract_middle_string(tem_flights[i].arrival_airport));
+        GtkWidget *price_label = gtk_label_new(format_number_with_separator(tem_flights[i].price, ','));
 
         GtkWidget *check_button = gtk_button_new_with_label("Check");
          gtk_widget_set_name(check_button, "check_button");
-        g_signal_connect(check_button, "clicked", G_CALLBACK(on_detail_link_click),main_box);
+        g_signal_connect(check_button, "clicked", G_CALLBACK(on_detail_link_click), tem_flights[i].flight_id);
 
         // Thêm các label vào ticket_box
         gtk_box_pack_start(GTK_BOX(ticket_box), airline_label, TRUE, TRUE, 5);
@@ -86,13 +80,13 @@ void refresh_ticket_list(GtkWidget *container) {
 }
 // Hàm sắp xếp vé
 void sort_flights(gboolean ascending) {
-    for (int i = 0; i < MAX_FLIGHTS; i++) {
-        for (int j = i + 1; j < MAX_FLIGHTS; j++) {
-            if ((ascending && flights[i].price > flights[j].price) ||
-                (!ascending && flights[i].price < flights[j].price)) {
-                Flight temp = flights[i];
-                flights[i] = flights[j];
-                flights[j] = temp;
+    for (int i = 0; i < tem_flight_count; i++) {
+        for (int j = i + 1; j < tem_flight_count; j++) {
+            if ((ascending && tem_flights[i].price > tem_flights[j].price) ||
+                (!ascending && tem_flights[i].price < tem_flights[j].price)) {
+                Flight temp = tem_flights[i];
+                tem_flights[i] = tem_flights[j];
+                tem_flights[j] = temp;
             }
         }
     }
@@ -127,7 +121,7 @@ GtkWidget* create_filter_box() {
 }
 // Hàm tạo list window
 GtkWidget* create_list_window() {
-    GtkWidget *main_box, *header, *filter_box, *ticket_list;
+    GtkWidget *main_box, *header, *filter_box;
 
     // Tạo hộp chính
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
