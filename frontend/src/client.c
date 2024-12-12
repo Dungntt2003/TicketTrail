@@ -2,6 +2,7 @@
 #include "./homepage/homepage.h"
 #include "./register/register.h"
 #include "./server_com/server_com.h"
+#include "./payment/payment.h"
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -20,8 +21,10 @@ int main(int argc, char *argv[]) {
   GtkWidget *main_window = create_main_window();
   gtk_widget_show_all(main_window);
 
-  GtkWidget *homepage = create_homepage_window();
-  set_content(homepage);
+  // GtkWidget *homepage = create_homepage_window();
+  // set_content(homepage);
+  GtkWidget *payment = create_payment_window();
+  set_content(payment);
   gtk_main();
   close(sock);
   return 0;
