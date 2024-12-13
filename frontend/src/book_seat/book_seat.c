@@ -28,6 +28,7 @@ const char *arrival_date = "08/12/24";
 const char *departure_time = "9:30 PM";   
 const char *arrival_time = "12:30 PM"; 
 const char *ticket_price = "$240"; 
+char selected_seat_label[4] = ""; // Ví dụ: "1A" hoặc "2B"
 
 void initialize_seats() {
     const char *columns = "ABCDEFGHIJ";
@@ -42,7 +43,7 @@ void initialize_seats() {
 }
 
 
-static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
+static gboolean on_book_seat_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
     GdkPixbuf *bg_pixbuf;
     GdkPixbuf *scaled_pixbuf;
 
@@ -122,7 +123,7 @@ double seat_width = 30, seat_height = 30;
             } else if (i == 1 || i == 2) {
                 cairo_set_source_rgb(cr, 0.7, 0.9, 1.0); // Light blue for Business class
             } else {
-                cairo_set_source_rgb(cr, 0.6, 0.8, 1.0); // Blue for Economy class
+                cairo_set_source_rgb(cr, 0.7, 0.5, 1.0); // Blue for Economy class
             }
 
             // Change color if selected
@@ -262,6 +263,13 @@ cairo_stroke(cr);
         g_object_unref(economy_logo);
     }
 
+     // Vẽ ten hang
+    cairo_set_source_rgb(cr, 0.7, 0.5, 1.0); 
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 14);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 630, (screen_height - 588) / 2 + 330);
+    cairo_show_text(cr, "Economy Class");
+
       GdkPixbuf *business_logo = gdk_pixbuf_new_from_file("../../assets/images/Business.png", NULL);
     if (business_logo) {
         GdkPixbuf *scaled_business = gdk_pixbuf_scale_simple(business_logo, 213, 120, GDK_INTERP_BILINEAR);
@@ -270,6 +278,13 @@ cairo_stroke(cr);
         g_object_unref(scaled_business);
         g_object_unref(business_logo);
     }
+
+    //
+    cairo_set_source_rgb(cr, 0.7, 0.9, 1.0); 
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 14);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 870, (screen_height - 588) / 2 + 330);
+    cairo_show_text(cr, "Business Class");
 
      GdkPixbuf *first_logo = gdk_pixbuf_new_from_file("../../assets/images/First.png", NULL);
     if (first_logo) {
@@ -280,6 +295,13 @@ cairo_stroke(cr);
         g_object_unref(first_logo);
     }
 
+    //
+    cairo_set_source_rgb(cr, 1.0, 0.75, 0.8); 
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 14);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 750, (screen_height - 588) / 2 + 480);
+    cairo_show_text(cr, "First Class");
+
 
       //Vẽ đường kẻ dưới 
     cairo_set_source_rgb(cr, 0.91, 0.91, 0.91); // Màu #E6E8E7
@@ -289,11 +311,12 @@ cairo_stroke(cr);
     cairo_stroke(cr);  
 
     //seat number
-     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4); // Màu đen
+   cairo_set_source_rgb(cr, 0.4, 0.4, 0.4); // Màu đen
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 530);
-    cairo_show_text(cr, "seat number:");
+    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 550);
+    cairo_show_text(cr, "Seat number: ");
+    cairo_show_text(cr, selected_seat_label); 
 
    // Vẽ nút Confirm
 cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); // Màu nền xanh đậm (#223A60)
@@ -324,22 +347,27 @@ cairo_move_to(
         return FALSE;
     }
 
-    gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    double seat_width = 50, seat_height = 50;
+  gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    double seat_width = 30, seat_height = 30;
     double margin = 10;
+    double offset_x = 150; // Cập nhật với vị trí mới
 
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < SEATS_PER_ROW; j++) {
-            double x = margin + j * (seat_width + margin);
-            double y = margin + i * (seat_height + margin);
+            // Cập nhật tọa độ ghế theo mới
+            double x = offset_x + margin + j * (seat_width + margin);
+            double y = 150 + margin + i * (seat_height + margin);  // Vẫn giữ margin cho Y
 
+            // Kiểm tra nếu chuột click vào ghế
             if (event->x >= x && event->x <= x + seat_width && event->y >= y && event->y <= y + seat_height) {
+                // Toggle trạng thái chọn của ghế
                 seats[i][j].selected = !seats[i][j].selected;
-                gtk_widget_queue_draw(widget);
+                gtk_widget_queue_draw(widget);  // Yêu cầu vẽ lại widget
 
-                // Print selected seat to console or update a label widget
+                // In ra thông báo ghế được chọn hay bỏ chọn
                 if (seats[i][j].selected) {
-                    g_print("Seat selected: %s\n", seats[i][j].label);
+                    strncpy(selected_seat_label, seats[i][j].label, sizeof(selected_seat_label));
+                    g_print("Seat selected: %s\n", selected_seat_label);
                 } else {
                     g_print("Seat deselected: %s\n", seats[i][j].label);
                 }
@@ -350,53 +378,24 @@ cairo_move_to(
 
     return FALSE;
 }
-GtkWidget* create_ticket_detail_window() {
+
+  GtkWidget* create_book_seat_window() {
     GtkWidget *drawing_area, *main_box;
 
     // Tạo một box chính để chứa nội dung
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+     initialize_seats(); 
+
     // Tạo khu vực vẽ
     drawing_area = gtk_drawing_area_new();
-    g_signal_connect(drawing_area, "draw", G_CALLBACK(on_ticket_detail_draw), NULL);
+    g_signal_connect(drawing_area, "draw", G_CALLBACK(on_book_seat_draw), NULL);
+     g_signal_connect(G_OBJECT(drawing_area), "button-press-event", G_CALLBACK(on_mouse_click), NULL);
+
+ gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
 
     // Thêm drawing_area vào main_box
     gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
     return main_box;
 }
-int main(int argc, char *argv[]) {
-    GtkWidget *window;
-    GtkWidget *drawing_area;
-
-    // Khởi tạo GTK
-    gtk_init(&argc, &argv);
-
-     initialize_seats(); 
-
-    // Tạo cửa sổ chính
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Ticket Details");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-
-    // Kết nối tín hiệu để đóng cửa sổ
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    // Tạo Drawing Area để vẽ giao diện
-    drawing_area = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(window), drawing_area);
-
-    // Kết nối tín hiệu vẽ
-    g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_ticket_detail_draw), NULL);
-     g_signal_connect(G_OBJECT(drawing_area), "button-press-event", G_CALLBACK(on_mouse_click), NULL);
-
-    // Hiển thị tất cả các widget
-    gtk_widget_show_all(window);
-
-    // Vòng lặp chính của GTK
-    gtk_main();
-
-    return 0;
-}
-

@@ -3,6 +3,6 @@
 
 #include <gtk/gtk.h>
 
-GtkWidget* create_ticket_detail_window();
+GtkWidget* create_book_seat_window();
 
 #endif 
