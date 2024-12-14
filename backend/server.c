@@ -9,7 +9,7 @@
 #include "./flight/flight.h"
 
 #define PORT 8080
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 char *token;
 Flight *flights = NULL;
 int count_flight = 0;
@@ -74,10 +74,7 @@ void *handle_client(void *client_socket) {
     int read_size;
 
     while (1) {
-            if (fetch_flights(&flights, &count_flight) != 0) {
-                fprintf(stderr, "Failed to fetch flights.\n");
-            }
-        // if (!is_logged_in){
+        if (!is_logged_in){
            recv(sock, buffer, sizeof(buffer), 0);
            buffer[strcspn(buffer, "\n")] = 0;
            if (strncmp(buffer, "REGISTER", strlen("REGISTER")) == 0){
@@ -129,14 +126,19 @@ void *handle_client(void *client_socket) {
                     }
                     else send(sock, "FAILED", strlen("FAILED") + 1, 0);
                 }
-            // }
+            }
         }
-        // else {
+        else {
+            recv(sock, buffer, sizeof(buffer), 0);
+            buffer[strcspn(buffer, "\n")] = 0;
             if (strncmp(buffer, "GET FLIGHTS", strlen("GET FLIGHTS")) == 0){
+                if (fetch_flights(&flights, &count_flight) != 0) {
+                    fprintf(stderr, "Failed to fetch flights.\n");
+                }
                 send(sock, &count_flight, sizeof(count_flight), 0);
                 send_flights(sock, flights, count_flight);
             }
-        // }
+        }
     }
 
     close(sock);

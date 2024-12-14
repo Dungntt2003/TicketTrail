@@ -440,16 +440,16 @@ cairo_show_text(cr, price_value);
 
 
 GtkWidget* create_payment_window() {
-    GtkWidget *window, *drawing_area;
+    GtkWidget *main_box, *drawing_area;
 
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Payment");
-    gtk_window_fullscreen(GTK_WINDOW(window));
-    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    // gtk_window_set_title(GTK_WINDOW(main_box), "Payment");
+    // gtk_window_fullscreen(GTK_WINDOW(main_box));
+    // gtk_window_set_resizable(GTK_WINDOW(main_box), FALSE);
 
     drawing_area = gtk_drawing_area_new();
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_payment_draw), NULL);
-    gtk_container_add(GTK_CONTAINER(window), drawing_area);
+    gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
-    return window;
+    return main_box;
 }

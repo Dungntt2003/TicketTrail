@@ -49,7 +49,7 @@ static gboolean on_book_seat_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     gint screen_width = gtk_widget_get_allocated_width(widget);
     gint screen_height = gtk_widget_get_allocated_height(widget);
 
-    bg_pixbuf = gdk_pixbuf_new_from_file("../../assets/images/bg_login.png", NULL);
+    bg_pixbuf = gdk_pixbuf_new_from_file("../assets/images/bg_login.png", NULL);
     if (!bg_pixbuf) {
         g_print("Error loading image!\n");
         return FALSE;
@@ -136,7 +136,7 @@ double seat_width = 30, seat_height = 30;
 
      
      
-    GdkPixbuf *airline_logo = gdk_pixbuf_new_from_file("../../assets/images/airline.png", NULL);
+    GdkPixbuf *airline_logo = gdk_pixbuf_new_from_file("../assets/images/airline.png", NULL);
     if (airline_logo) {
         GdkPixbuf *scaled_logo = gdk_pixbuf_scale_simple(airline_logo, 219, 53, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_logo,  x_position + radius + 120, y_position + 10);
@@ -180,7 +180,7 @@ double seat_width = 30, seat_height = 30;
     cairo_show_text(cr, "Tan Son Nhat Airport");
 
      
-    GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../../assets/images/flight-icon.png", NULL);
+    GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../assets/images/flight-icon.png", NULL);
     if (flight_icon) {
         GdkPixbuf *scaled_flight_icon = gdk_pixbuf_scale_simple(flight_icon, 59, 14, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_flight_icon, (screen_width - 936) / 2 + 660, (screen_height - 588) / 2 + 88);
@@ -245,7 +245,7 @@ cairo_stroke(cr);
 
 
      
-      GdkPixbuf *economy_logo = gdk_pixbuf_new_from_file("../../assets/images/Economy.png", NULL);
+      GdkPixbuf *economy_logo = gdk_pixbuf_new_from_file("../assets/images/Economy.png", NULL);
     if (economy_logo) {
         GdkPixbuf *scaled_economy = gdk_pixbuf_scale_simple(economy_logo, 213, 120, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_economy,  x_position + radius - 30, y_position + 200);
@@ -261,7 +261,7 @@ cairo_stroke(cr);
     cairo_move_to(cr, (screen_width - 936) / 2 + 630, (screen_height - 588) / 2 + 330);
     cairo_show_text(cr, "Economy Class");
 
-      GdkPixbuf *business_logo = gdk_pixbuf_new_from_file("../../assets/images/Business.png", NULL);
+      GdkPixbuf *business_logo = gdk_pixbuf_new_from_file("../assets/images/Business.png", NULL);
     if (business_logo) {
         GdkPixbuf *scaled_business = gdk_pixbuf_scale_simple(business_logo, 213, 120, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_business,  x_position + radius + 230, y_position + 200);
@@ -277,7 +277,7 @@ cairo_stroke(cr);
     cairo_move_to(cr, (screen_width - 936) / 2 + 870, (screen_height - 588) / 2 + 330);
     cairo_show_text(cr, "Business Class");
 
-     GdkPixbuf *first_logo = gdk_pixbuf_new_from_file("../../assets/images/First.png", NULL);
+     GdkPixbuf *first_logo = gdk_pixbuf_new_from_file("../assets/images/First.png", NULL);
     if (first_logo) {
         GdkPixbuf *scaled_first = gdk_pixbuf_scale_simple(first_logo, 213, 120, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_first,  x_position + radius + 100, y_position + 350);

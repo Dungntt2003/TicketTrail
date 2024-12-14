@@ -12,6 +12,8 @@
     "sha.h": "c",
     "flight.h": "c",
     "server_com.h": "c",
-    "pango.h": "c"
+    "pango.h": "c",
+    "user.h": "c",
+    "book_seat.h": "c"
   }
 }
