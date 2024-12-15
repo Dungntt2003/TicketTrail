@@ -2,5 +2,6 @@
   "files.associations": {
     "socket.h": "c",
     "homepage.h": "c"
-  }
+  },
+  "C_Cpp_Runner.msvcBatchPath": ""
 }
