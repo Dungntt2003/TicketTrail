@@ -90,20 +90,21 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     
     
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); 
-    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 24);
     cairo_move_to(cr, (screen_width - 936) / 2 + 220, (screen_height - 588) / 2 + 160);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
     
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4); 
-    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 20);
     cairo_move_to(cr, (screen_width - 936) / 2 + 200, (screen_height - 588) / 2 + 190);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
     
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); 
+    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_move_to(cr, (screen_width - 936) / 2 + 620, (screen_height - 588) / 2 + 160);
     cairo_set_font_size(cr, 24);
     cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
