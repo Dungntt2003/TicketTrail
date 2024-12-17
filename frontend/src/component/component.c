@@ -16,12 +16,12 @@ void on_home_button_clicked(GtkWidget *widget, gpointer data) {
 
 static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
     GtkWidget **buttons = (GtkWidget **)user_data;
-    
+
     if (buttons == NULL) {
         g_print("Error: buttons array is NULL\n");
         return;
     }
-    
+
     if (gtk_toggle_button_get_active(button)) {
         for (int i = 0; buttons[i] != NULL; i++) {
             if (buttons[i] != GTK_WIDGET(button)) {
@@ -30,8 +30,61 @@ static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
         }
     }
 }
+void get_notifications_data(const char ***messages, const char ***dates, int *count) {
+    static const char *msgs[] = {
+        "Vietjet Air xin thông báo delay chuyến bay từ HN đến HCM vào 17:00 xuống 21:00",
+        "Vietnam Airlines xin thông báo delay chuyến bay từ HCM đến Đà Nẵng vào 14:30 xuống 15:30"
+    };
+    static const char *dates_array[] = {
+        "17/12/2024",
+        "17/12/2024"
+    };
 
-GtkWidget* create_header(GtkWidget **buttons) {
+    *messages = msgs;
+    *dates = dates_array;
+    *count = 2;
+}
+
+void show_notification(GtkWidget *widget, gpointer data) {
+    // Lấy dữ liệu các thông báo và ngày báo
+    const char **messages;
+    const char **dates;
+    int count;
+    get_notifications_data(&messages, &dates, &count);
+
+    // Tạo popover chứa thông báo
+    GtkWidget *popover = gtk_popover_new(GTK_WIDGET(data));
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    
+    // Duyệt qua các thông báo và hiển thị
+    for (int i = 0; i < count; i++) {
+        // Tạo Label cho thông báo
+        GtkWidget *message_label = gtk_label_new(messages[i]);
+        gtk_box_pack_start(GTK_BOX(box), message_label, FALSE, FALSE, 0);
+          gtk_widget_set_halign(message_label, GTK_ALIGN_START); // Căn trái
+        
+        // Tạo Label cho ngày báo và gán nội dung
+        GtkWidget *date_label = gtk_label_new(dates[i]);
+        gtk_box_pack_start(GTK_BOX(box), date_label, FALSE, FALSE, 0);
+         gtk_widget_set_halign(date_label, GTK_ALIGN_START); // Căn trái
+
+         // Thay đổi màu sắc cho ngày (màu nhạt)
+        GdkRGBA color;
+        gdk_rgba_parse(&color, "#A9A9A9"); // Màu xám nhạt
+        gtk_widget_override_color(date_label, GTK_STATE_FLAG_NORMAL, &color);
+    }
+
+    // Thêm box vào popover
+    gtk_container_add(GTK_CONTAINER(popover), box);
+
+    // Hiển thị popover
+    gtk_widget_show_all(popover);
+
+    // Hiển thị popover ở vị trí gần nút
+    gtk_popover_set_relative_to(GTK_POPOVER(popover), widget);
+    gtk_popover_popup(GTK_POPOVER(popover));
+}
+GtkWidget* create_header(GtkWidget **buttons, GtkWidget *parent_container) {
     GtkWidget *header, *logo, *menu_box, *home_button, *ticket_button, *account_button, *notification_button;
 
     // Tạo box chứa header
@@ -125,6 +178,7 @@ GtkWidget* create_header(GtkWidget **buttons) {
     g_signal_connect(ticket_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     g_signal_connect(account_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     g_signal_connect(notification_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
+    g_signal_connect(notification_button, "clicked",G_CALLBACK(show_notification), window);
     g_signal_connect(home_button, "clicked", G_CALLBACK(on_home_button_clicked), NULL);
 
     return header;
