@@ -1,4 +1,4 @@
-#include "payment.h"
+#include "../payment/payment.h"
 #include <cairo.h>
 #include <math.h>
 #include "../global/global.h"
@@ -13,7 +13,139 @@ const char *flight_code = "IN 230";
 const char *gate_code= "22";
 const char *seat_code= "2B, 3B";
 const char *class_number= "Economy";
+int selected_voucher = -1;
+double original_price = 240000.0; // Original ticket price
+double discounted_price = 240000.0;
+char error_message[256] = "";
+time_t error_start_time = 0;
 
+// Function to calculate discounted price
+double calculate_discounted_price(int voucher_index) {
+    if (voucher_index == -1) return original_price;
+
+    switch (voucher_index) {
+        case 0: return original_price - 200000; // Welcome Voucher
+        case 1: return original_price * 0.75;  // 25% OFF
+        case 2: {
+            // Group Travel Discount: Requires at least 3 seats
+            int seat_count = 0;
+            for (const char *c = seat_code; *c; c++) {
+                if (*c == ',') seat_count++;
+            }
+            seat_count++; // Count the last seat
+            if (seat_count < 3) {
+                snprintf(error_message, sizeof(error_message),
+                         "You must purchase\nat least 3 tickets\nto apply this voucher.");
+                error_start_time = time(NULL);
+                return original_price;
+            }
+            return original_price * 0.8; // 20% OFF
+        }
+        case 3: return original_price * 0.9; // 10% OFF
+        default: return original_price;
+    }
+}
+
+// Draw error popup
+double popup_close_button_x, popup_close_button_y, popup_close_button_size = 24;
+
+void draw_error_popup(cairo_t *cr, gint screen_width, gint screen_height) {
+    if (error_message[0] && difftime(time(NULL), error_start_time) < 20) {
+        double popup_width = 400;
+        double popup_height = 120;
+        double popup_x = (screen_width - popup_width) / 2;
+        double popup_y = (screen_height - popup_height) / 2;
+
+        // Background
+        cairo_set_source_rgb(cr, 34.0 / 255.0, 58.0 / 255.0, 96.0 / 255.0);
+        cairo_new_path(cr);
+        cairo_arc(cr, popup_x + 24, popup_y + 24, 24, M_PI, 3 * M_PI / 2);
+        cairo_arc(cr, popup_x + popup_width - 24, popup_y + 24, 24, 3 * M_PI / 2, 2 * M_PI);
+        cairo_arc(cr, popup_x + popup_width - 24, popup_y + popup_height - 24, 24, 0, M_PI / 2);
+        cairo_arc(cr, popup_x + 24, popup_y + popup_height - 24, 24, M_PI / 2, M_PI);
+        cairo_close_path(cr);
+        cairo_fill(cr);
+
+        // Text
+        cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+        cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_set_font_size(cr, 18);
+
+        // First line
+        cairo_text_extents_t text_extents;
+        cairo_text_extents(cr, "You must purchase", &text_extents);
+        cairo_move_to(cr, popup_x + (popup_width - text_extents.width) / 2, popup_y + 40);
+        cairo_show_text(cr, "You must purchase");
+
+        // Second line
+        cairo_text_extents(cr, "at least 3 tickets", &text_extents);
+        cairo_move_to(cr, popup_x + (popup_width - text_extents.width) / 2, popup_y + 65);
+        cairo_show_text(cr, "at least 3 tickets");
+
+        // Third line
+        cairo_text_extents(cr, "to apply this voucher.", &text_extents);
+        cairo_move_to(cr, popup_x + (popup_width - text_extents.width) / 2, popup_y + 90);
+        cairo_show_text(cr, "to apply this voucher.");
+
+        // Close button
+        double close_circle_radius = 12;
+        popup_close_button_x = popup_x + popup_width - 20 - close_circle_radius * 2;
+        popup_close_button_y = popup_y + 20;
+
+        cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+        cairo_arc(cr, popup_close_button_x + close_circle_radius, popup_close_button_y + close_circle_radius, close_circle_radius, 0, 2 * M_PI);
+        cairo_fill(cr);
+
+        double x_thickness = 3.0, x_length = 10.0;
+        cairo_set_source_rgb(cr, 34.0 / 255.0, 58.0 / 255.0, 96.0 / 255.0);
+        cairo_set_line_width(cr, x_thickness);
+
+        // X lines
+        cairo_move_to(cr, popup_close_button_x + close_circle_radius - x_length / 2, popup_close_button_y + close_circle_radius - x_length / 2);
+        cairo_line_to(cr, popup_close_button_x + close_circle_radius + x_length / 2, popup_close_button_y + close_circle_radius + x_length / 2);
+        cairo_move_to(cr, popup_close_button_x + close_circle_radius + x_length / 2, popup_close_button_y + close_circle_radius - x_length / 2);
+        cairo_line_to(cr, popup_close_button_x + close_circle_radius - x_length / 2, popup_close_button_y + close_circle_radius + x_length / 2);
+        cairo_stroke(cr);
+    }
+}
+
+static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    gint screen_width = gtk_widget_get_allocated_width(widget);
+    gint screen_height = gtk_widget_get_allocated_height(widget);
+
+    if (error_message[0] &&
+        event->x >= popup_close_button_x &&
+        event->x <= popup_close_button_x + popup_close_button_size &&
+        event->y >= popup_close_button_y &&
+        event->y <= popup_close_button_y + popup_close_button_size) {
+        error_message[0] = '\0';
+        selected_voucher = -1;
+        discounted_price = original_price;
+        gtk_widget_queue_draw(widget);
+        return TRUE;
+    }
+
+    double voucher_x = screen_width / 2 - 500 + 50;
+    double voucher_y = screen_height / 2 - 300 + 100;
+
+    for (int i = 0; i < 4; i++) {
+        if (event->x >= voucher_x && event->x <= voucher_x + 400 &&
+            event->y >= voucher_y && event->y <= voucher_y + 104) {
+            selected_voucher = i;
+            discounted_price = calculate_discounted_price(i);
+
+            if (selected_voucher != 2 || discounted_price != original_price) {
+                error_message[0] = '\0';
+            }
+
+            gtk_widget_queue_draw(widget);
+            return TRUE;
+        }
+        voucher_y += 120;
+    }
+
+    return FALSE;
+}
 
 static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
     GdkPixbuf *bg_pixbuf;
@@ -80,43 +212,33 @@ static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
     
     double voucher_x = (screen_width - 1000) / 2 + (500 - 400) / 2;
     double voucher_y = screen_height / 2 - 300 + 100; 
-    for (int i = 0; i < 4; i++) {
-        
-        cairo_set_source_rgb(cr, 0.98, 0.98, 0.98); 
+        for (int i = 0; i < 4; i++) {
+        // Highlight selected voucher
+        if (i == selected_voucher) {
+            cairo_set_source_rgb(cr, 0.55, 0.93, 0.93); // Highlight color #8DECEC
+        } else {
+            cairo_set_source_rgb(cr, 0.98, 0.98, 0.98); // Default color #FBFBFB
+        }
+
+        // Vẽ nền voucher
         cairo_new_path(cr);
-
-        
         cairo_arc(cr, voucher_x + 8, voucher_y + 8, 8, M_PI, 3 * M_PI / 2);
-
-        
         cairo_line_to(cr, voucher_x + 400 - 8, voucher_y);
-
-        
         cairo_arc(cr, voucher_x + 400 - 8, voucher_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
-
-        
         cairo_line_to(cr, voucher_x + 400, voucher_y + 104 - 8);
-
-        
         cairo_arc(cr, voucher_x + 400 - 8, voucher_y + 104 - 8, 8, 0, M_PI / 2);
-
-        
         cairo_line_to(cr, voucher_x + 8, voucher_y + 104);
-
-        
         cairo_arc(cr, voucher_x + 8, voucher_y + 104 - 8, 8, M_PI / 2, M_PI);
+        cairo_close_path(cr); // Kết thúc đường vẽ
 
-        cairo_close_path(cr); 
-
-        
+        // Tô nền voucher
         cairo_fill_preserve(cr);
 
         
         cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.25); 
         cairo_stroke(cr);
 
-
-        
+        // Vẽ đường kẻ dọc nét đứt
         cairo_set_dash(cr, (double[]){6.0, 4.0}, 2, 0.0);
         cairo_move_to(cr, voucher_x + 124, voucher_y + 8.55);
         cairo_line_to(cr, voucher_x + 124, voucher_y + 95.45);
@@ -140,7 +262,7 @@ static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
         const char *voucher_texts[4][3] = {
             {"200.000 VND", "Welcome Voucher", "Valid until 01 February 2025"},
             {"25% OFF", "VNPAY Payment Voucher", "Valid until 03 March 2025"},
-            {"20% OFF", "VNPAY Payment Voucher", "Valid until 05 March 2025"},
+            {"20% OFF", "Group Travel Discount", "Valid until 05 March 2025"},
             {"10% OFF", "Over 1 Million Discount", "Valid until 09 March 2025"}};
 
         
@@ -166,7 +288,6 @@ static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
 
         voucher_y += 120; 
     }
-
     
     GdkPixbuf *logo_pixbuf = gdk_pixbuf_new_from_file("../assets/images/logovn.png", NULL);
     if (logo_pixbuf) {
@@ -348,37 +469,71 @@ cairo_show_text(cr, selected_time);
 
     
     
+
+// Define the text for Price and its value
 const char *price_label = "Price";
 const char *price_value = ticket_price;
 
-
-cairo_text_extents_t price_label_extents, price_value_extents;
+// Calculate the total width of the Price label and the old price group
+cairo_text_extents_t price_label_extents, price_value_extents, new_price_extents;
 cairo_set_font_size(cr, 18);
 cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 cairo_text_extents(cr, price_label, &price_label_extents);
 
-cairo_set_font_size(cr, 32);
+cairo_set_font_size(cr, 24);
 cairo_text_extents(cr, price_value, &price_value_extents);
 
-double total_width = price_label_extents.width + 10 + price_value_extents.width; 
+// Calculate the width for "Price" label + old price
+double total_width = price_label_extents.width + 10 + price_value_extents.width; // 10px gap between label and value
 
-
+// Center alignment for the group (Price label + old price) in the right half
 double base1_x = screen_width / 2 + 500 - (500 / 2) - (total_width / 2);
+double base1_y = base_y + 100;// Vertical alignment
 
-
-double base1_y = base_y + 100; 
-
-
-cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); 
+// Draw "Price" label
+cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); // Black color
 cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-cairo_set_font_size(cr, 22);
+cairo_set_font_size(cr, 18);
 cairo_move_to(cr, base1_x, base1_y);
 cairo_show_text(cr, price_label);
 
+// Draw old price
+double old_price_x = base1_x + price_label_extents.width + 10;
+cairo_set_font_size(cr, 24); // Font size for old price
+if (selected_voucher == -1 || (selected_voucher == 2 && error_message[0])) {
+    // Display only the original price without a strikethrough
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); // Black color
+    cairo_move_to(cr, old_price_x, base1_y);
+    cairo_show_text(cr, price_value);
+} else {
+    // Display old price with a strikethrough
+    cairo_set_source_rgb(cr, 0.6, 0.6, 0.6); // Gray color
+    cairo_move_to(cr, old_price_x, base1_y);
+    cairo_show_text(cr, price_value);
 
-cairo_set_font_size(cr, 32); 
-cairo_move_to(cr, base1_x + price_label_extents.width + 20, base1_y); 
-cairo_show_text(cr, price_value);
+    // Draw strikethrough line for old price
+    cairo_text_extents(cr, price_value, &price_value_extents);
+    double strikethrough_start_x = old_price_x;
+    double strikethrough_end_x = old_price_x + price_value_extents.width;
+    double strikethrough_y = base1_y - price_value_extents.height / 2;
+    cairo_move_to(cr, strikethrough_start_x, strikethrough_y);
+    cairo_line_to(cr, strikethrough_end_x, strikethrough_y);
+    cairo_stroke(cr);
+
+    // Draw new price below the old price
+    char new_price[64];
+    snprintf(new_price, sizeof(new_price), "%.0f VND", discounted_price);
+    cairo_text_extents(cr, new_price, &new_price_extents);
+
+    double new_price_x = old_price_x + (price_value_extents.width - new_price_extents.width) / 2;
+    double new_price_y = base1_y + 40; // 40px below the old price
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); // Black color for new price
+    cairo_move_to(cr, new_price_x, new_price_y);
+    cairo_show_text(cr, new_price);
+}
+
+// Draw error popup if necessary
+draw_error_popup(cr, screen_width, screen_height);
 
 
     
@@ -449,6 +604,8 @@ GtkWidget* create_payment_window() {
 
     drawing_area = gtk_drawing_area_new();
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_payment_draw), NULL);
+    g_signal_connect(drawing_area, "button-press-event", G_CALLBACK(on_button_press), NULL);
+    gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
     gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
     return main_box;
