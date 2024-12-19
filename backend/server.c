@@ -13,7 +13,9 @@
 char *token;
 Flight *flights = NULL;
 int count_flight = 0;
-
+int seat_count = 0;
+char **seats;
+char seat_code[10]; 
 void send_flights(int client_sock, Flight *flights, int count) {
     char buffer[65536]; 
     int offset = 0;  
@@ -39,6 +41,7 @@ void send_flights(int client_sock, Flight *flights, int count) {
         printf("Sent %d bytes of flight data.\n", bytes_sent);
     }
 }
+
 
 int calculate_checksum(const char *data) {
     int checksum = 0;
@@ -137,6 +140,41 @@ void *handle_client(void *client_socket) {
                 }
                 send(sock, &count_flight, sizeof(count_flight), 0);
                 send_flights(sock, flights, count_flight);
+            }
+            else if (strncmp(buffer, "GET ORDERED SEATS", strlen("GET ORDERED SEATS")) == 0){
+                int ret = sscanf(buffer, "GET ORDERED SEATS %s", seat_code);
+                if (ret == 1) {
+                    printf("Received seat code: %s\n", seat_code);
+                    char **seats = get_seat_codes_by_flight_id(seat_code, &seat_count);
+                    if (seats!= NULL) {
+                        char response[4096]; 
+                        int written = snprintf(response, sizeof(response), "SEAT COUNT: %d\n", seat_count);
+                        if (written < 0) {
+                            perror("Error writing seat count");
+                            return 0;
+                        }
+                        send(sock, response, written, 0);  
+                        printf("Check\n");
+                        for (int i = 0; i < seat_count; i++) {
+                            written = snprintf(response, sizeof(response), "%s\n", seats[i]);
+                            printf("Check: %s", response);
+                            free(seats[i]); 
+                            if (written < 0) {
+                                perror("Error writing seat data");
+                                return 0;
+                            }
+                            send(sock, response, strlen(response), 0); 
+                        }
+                        free(seats);  
+                        printf("Sent done\n");
+                    }
+                    else {
+                        printf("No Sent\n");
+                        send(sock,"ID error", strlen("ID error") + 1, 0);
+                    }
+                } else {
+                    printf("Invalid format\n");
+                }
             }
         }
     }

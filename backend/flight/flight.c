@@ -106,5 +106,71 @@ int get_ticket_count_by_flight_id(const char *flight_id, const char *type) {
 
     mysql_free_result(res);
     disconnect_db(conn);
-
 }
+
+char** get_seat_codes_by_flight_id(const char *flight_id, int *seat_count) {
+    MYSQL *conn = connect_db();
+    if (conn == NULL) {
+        return NULL;
+    }
+
+    MYSQL_RES *res;
+    MYSQL_ROW row;
+    char query[1024];
+
+    snprintf(query, sizeof(query),
+             "SELECT bd.seat_code "
+             "FROM flights f "
+             "JOIN bookings b ON f.flight_id = b.flight_id "
+             "JOIN booking_details bd ON b.booking_id = bd.booking_id "
+             "WHERE f.flight_id = '%s';", flight_id);
+
+    if (mysql_query(conn, query)) {
+        fprintf(stderr, "SELECT failed. Error: %s\n", mysql_error(conn));
+        disconnect_db(conn);
+        return NULL;
+    }
+
+    res = mysql_store_result(conn);
+    if (res == NULL) {
+        fprintf(stderr, "mysql_store_result() failed. Error: %s\n", mysql_error(conn));
+        disconnect_db(conn);
+        return NULL;
+    }
+
+    *seat_count = mysql_num_rows(res);
+    if (*seat_count == 0) {
+        mysql_free_result(res);
+        disconnect_db(conn);
+        return NULL; 
+    }
+
+    char **seat_codes = malloc(sizeof(char*) * (*seat_count));
+    if (seat_codes == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        mysql_free_result(res);
+        disconnect_db(conn);
+        return NULL;
+    }
+
+    int i = 0;
+    while ((row = mysql_fetch_row(res)) != NULL) {
+        seat_codes[i] = strdup(row[0]);
+        if (seat_codes[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed for seat_code\n");
+            for (int j = 0; j < i; j++) {
+                free(seat_codes[j]);
+            }
+            free(seat_codes);
+            mysql_free_result(res);
+            disconnect_db(conn);
+            return NULL;
+        }
+        i++;
+    }
+
+    mysql_free_result(res);
+    disconnect_db(conn);
+    return seat_codes;
+}
+

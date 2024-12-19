@@ -15,6 +15,8 @@ int flight_count;
 Flight tem_flights[MAX_LENGTH];
 int tem_flight_count;
 Flight detail_flight;
+int seat_count;
+char **seats_array;
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",

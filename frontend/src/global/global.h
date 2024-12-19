@@ -33,6 +33,8 @@ extern  int flight_count;
 extern Flight tem_flights[MAX_LENGTH];
 extern int tem_flight_count;
 extern Flight detail_flight;
+extern int seat_count;
+extern char **seats_array;
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
 int is_number(const char *str);

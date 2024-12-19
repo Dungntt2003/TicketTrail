@@ -1,9 +1,7 @@
 #include "./global/global.h"
 #include "./homepage/homepage.h"
-#include "./register/register.h"
 #include "./server_com/server_com.h"
-// #include "./book_seat/book_seat.h"
-#include "./payment/payment.h"
+#include "./register/register.h"
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdio.h>

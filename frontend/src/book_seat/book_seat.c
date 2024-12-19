@@ -338,7 +338,7 @@ cairo_move_to(
         return FALSE;
     }
 
-  gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+  gboolean on_mouse_click_book_seat(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     double seat_width = 30, seat_height = 30;
     double margin = 10;
     double offset_x = 150;  
@@ -381,11 +381,9 @@ cairo_move_to(
      
     drawing_area = gtk_drawing_area_new();
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_book_seat_draw), NULL);
-     g_signal_connect(G_OBJECT(drawing_area), "button-press-event", G_CALLBACK(on_mouse_click), NULL);
+    g_signal_connect(G_OBJECT(drawing_area), "button-press-event", G_CALLBACK(on_mouse_click_book_seat), NULL);
 
- gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
-
-     
+    gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
     gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
     return main_box;

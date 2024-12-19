@@ -4,23 +4,16 @@
 #include "../flight/flight.h"
 
 int main() {
-    Flight *flights = NULL;
-    int count = 0;
-
-    if (fetch_flights(&flights, &count) != 0) {
-        fprintf(stderr, "Failed to fetch flights.\n");
-        return 1;
+    int seat_count = 0;
+    char **seats = get_seat_codes_by_flight_id("VN007", &seat_count);
+    if (seats != NULL) {
+        for (int i = 0; i < seat_count; i++) {
+            printf("Seat code: %s\n", seats[i]);
+            free(seats[i]); 
+        }
+        free(seats);  
+    } else {
+        printf("No seats found or error occurred.\n");
     }
-
-    printf("Fetched %d flights:\n", count);
-    for (int i = 0; i < count; i++) {
-        printf("%s %s %d %d %d %s %s %s %d %d %d\n", flights[i].flight_id, flights[i].departure_time, 
-        flights[i].duration_minutes, flights[i].capacity, flights[i].price, flights[i].airplane_name,
-        flights[i].departure_airport, flights[i].arrival_airport, flights[i].available_economy,
-        flights[i].available_business, flights[i].available_first_class);
-    }
-
-    free(flights);
-
     return 0;
 }

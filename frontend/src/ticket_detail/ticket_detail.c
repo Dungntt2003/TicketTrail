@@ -7,21 +7,63 @@
 #include <arpa/inet.h>
 #include "../global/global.h"
 #include "../list/list.h"
+#include "../book_seat/book_seat.h"
 gint screen_width;
 gint screen_height;
 cairo_text_extents_t cancel_extents;
 
 
-gboolean on_cancel_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
-        
-        g_print("Cancel button clicked!\n");
-         GtkWidget *list_window = create_list_window();
-        if (!list_window) {
-            g_warning("Failed to create list window!");
-            return FALSE;
-        }
+gboolean on_mouse_click_ticket_detail(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    double cancel_button_x = (screen_width - 936) / 2 + (936 - 344) / 2;
+    double cancel_button_y = (screen_height - 588) / 2 + 500;
+    double cancel_button_width = 156;
+    double cancel_button_height = 56;
+
+    double confirm_button_x = (screen_width - 936) / 2 + (936 - 344) / 2 + 180;
+    double confirm_button_y = (screen_height - 588) / 2 + 500;
+    double confirm_button_width = 156;
+    double confirm_button_height = 56;
+
+    if (event->x >= cancel_button_x &&
+        event->x <= cancel_button_x + cancel_button_width &&
+        event->y >= cancel_button_y &&
+        event->y <= cancel_button_y + cancel_button_height) {
+        g_print("Cancel button clicked in ticket detail!\n");
+        GtkWidget *list_window = create_list_window();
         set_content(list_window);
-        return TRUE;  
+    }
+
+    if (event->x >= confirm_button_x &&
+        event->x <= confirm_button_x + confirm_button_width &&
+        event->y >= confirm_button_y &&
+        event->y <= confirm_button_y + confirm_button_height) {
+        g_print("Confirm button clicked!\n");
+        sprintf(buffer, "GET ORDERED SEATS %s", detail_flight.flight_id);
+        send(sock, buffer, strlen(buffer), 0);
+        int bytes_received = recv(sock, buffer, sizeof(buffer), 0);
+        if (bytes_received > 0) {
+            buffer[bytes_received] = '\0';
+            sscanf(buffer, "SEAT COUNT: %d", &seat_count); 
+            printf("Seat count: %d\n", seat_count);
+        }
+        seats_array = malloc(seat_count * sizeof(char *));
+        for (int i = 0; i < seat_count; i++) {
+            bytes_received = recv(sock, buffer, sizeof(buffer), 0);
+            if (bytes_received > 0) {
+                buffer[bytes_received] = '\0'; 
+                printf("Seat %d: %s\n", i + 1, buffer);  
+                 seats_array[i] = strdup(buffer);
+            }
+        }
+        for (int i = 0; i < seat_count; i++) {
+            g_printf("Check seat in array: %s", seats_array[i]);
+        }
+        g_print("Receice done\n");
+        GtkWidget *book_seat_window = create_book_seat_window();
+        set_content(book_seat_window);
+    }
+
+    return TRUE; 
 }
 
 static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
@@ -319,9 +361,6 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
         (screen_height - 588) / 2 + 500 + 56 / 2 + cancel_extents.height / 2
     );
     cairo_show_text(cr, "Cancel");
-    g_signal_connect(window, "button-press-event", G_CALLBACK(on_cancel_click), NULL);
-
-
     
     cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
     cairo_new_path(cr);
@@ -360,6 +399,8 @@ GtkWidget* create_ticket_detail_window() {
     drawing_area = gtk_drawing_area_new();
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_ticket_detail_draw), NULL);
 
+    gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(drawing_area, "button-press-event", G_CALLBACK(on_mouse_click_ticket_detail), NULL);
     
     gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
