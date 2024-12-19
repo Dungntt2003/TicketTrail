@@ -43,5 +43,6 @@ char* extract_middle_string(const char *input);
 void split_date_time(const char *input, char *date, char *time);
 bool checkHaveSeat(int available_economy, int available_business, int available_first,const char *type, int number_seat);
 void filter_flights(const Flight *flights, int flight_count, Flight *temp_flight, int *temp_count_flight, const char *departure, const char *arrival, const char *date,const char *class,const int number_seat);
+int get_seat_position(const char *seat_code, int *i, int *j);
 
 #endif 

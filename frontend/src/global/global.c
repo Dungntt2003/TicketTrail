@@ -198,3 +198,23 @@ void filter_flights(const Flight *flights, int flight_count, Flight *temp_flight
     }
     printf("After filter\n");
 }
+
+
+int get_seat_position(const char *seat_code, int *i, int *j) {
+    const char *columns = "ABCDEFGHIJ";
+    int row;
+    char column;
+    
+    if (sscanf(seat_code, "%d%c", &row, &column) != 2) {
+        return -1; 
+    }    
+    *i = row - 1; 
+
+    const char *column_ptr = strchr(columns, column);
+    if (column_ptr == NULL) {
+        return -1; 
+    }
+    *j = column_ptr - columns; 
+
+    return 0; 
+}

@@ -44,21 +44,38 @@ gboolean on_mouse_click_ticket_detail(GtkWidget *widget, GdkEventButton *event, 
         if (bytes_received > 0) {
             buffer[bytes_received] = '\0';
             sscanf(buffer, "SEAT COUNT: %d", &seat_count); 
-            printf("Seat count: %d\n", seat_count);
         }
+        g_print("Start\n");
         seats_array = malloc(seat_count * sizeof(char *));
-        for (int i = 0; i < seat_count; i++) {
-            bytes_received = recv(sock, buffer, sizeof(buffer), 0);
-            if (bytes_received > 0) {
-                buffer[bytes_received] = '\0'; 
-                printf("Seat %d: %s\n", i + 1, buffer);  
-                 seats_array[i] = strdup(buffer);
+        bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+            perror("Error receiving seats data");
+            return;
+        }
+        buffer[bytes_received] = '\0'; 
+
+        printf("Received seats string: %s\n", buffer);
+        // if (!(*seats_array)) {
+        //     perror("Memory allocation failed");
+        //     return;
+        // }
+        char *token = strtok(buffer, ",");
+        int i = 0;
+        while (token) {
+            seats_array[i] = strdup(token);
+            if (!seats_array[i]) {
+                perror("Error duplicating seat string");
+                break;
             }
+            token = strtok(NULL, ",");
+            i++;
         }
-        for (int i = 0; i < seat_count; i++) {
-            g_printf("Check seat in array: %s", seats_array[i]);
+
+        printf("Parsed seats:\n");
+        for (int j = 0; j < seat_count; j++) {
+            printf("Seat %d: %s\n", j + 1, seats_array[j]);
         }
-        g_print("Receice done\n");
+        printf("Receive done\n");
         GtkWidget *book_seat_window = create_book_seat_window();
         set_content(book_seat_window);
     }

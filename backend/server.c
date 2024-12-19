@@ -155,18 +155,30 @@ void *handle_client(void *client_socket) {
                         }
                         send(sock, response, written, 0);  
                         printf("Check\n");
+                        int total_length = 0;
+                        char *send_message = NULL;
+                        const char *delimiter = ","; 
                         for (int i = 0; i < seat_count; i++) {
-                            written = snprintf(response, sizeof(response), "%s\n", seats[i]);
-                            printf("Check: %s", response);
-                            free(seats[i]); 
-                            if (written < 0) {
-                                perror("Error writing seat data");
-                                return 0;
-                            }
-                            send(sock, response, strlen(response), 0); 
+                            total_length += strlen(seats[i]) + strlen(delimiter);
                         }
-                        free(seats);  
-                        printf("Sent done\n");
+                        send_message = malloc(total_length + 1);
+                        if (!send_message) {
+                            perror("Memory allocation failed");
+                            return 0;
+                        }
+                        send_message[0] = '\0'; 
+                        for (int i = 0; i < seat_count; i++) {
+                            strcat(send_message, seats[i]);
+                            if (i < seat_count - 1) {
+                                strcat(send_message, delimiter);
+                            }
+                            free(seats[i]);
+                        }
+                        free(seats); 
+                        send(sock, send_message, strlen(send_message), 0);
+                        printf("Sent seats: %s\n", send_message);
+                        free(send_message);
+                        printf("Sent seats\n");
                     }
                     else {
                         printf("No Sent\n");

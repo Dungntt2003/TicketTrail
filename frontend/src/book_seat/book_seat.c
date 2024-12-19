@@ -7,9 +7,10 @@
 #include <arpa/inet.h>
 #include "../global/global.h"
 
-#define ROWS 10
+#define ROWS 30
 #define SEATS_PER_ROW 10
-
+int actual_rows = 20;
+int i_code, j_code;
 typedef struct {
     int row;
     int seat;
@@ -30,8 +31,9 @@ const char *ticket_price = "$240";
 char selected_seat_label[4] = "";  
 
 void initialize_seats() {
+    actual_rows = detail_flight.capacity/10;
     const char *columns = "ABCDEFGHIJ";
-    for (int i = 0; i < ROWS; i++) {
+    for (int i = 0; i < actual_rows; i++) {
         for (int j = 0; j < SEATS_PER_ROW; j++) {
             seats[i][j].row = i + 1;
             seats[i][j].seat = j + 1;
@@ -103,12 +105,17 @@ cairo_stroke(cr);
 double seat_width = 30, seat_height = 30;
     double margin = 10;
 
-    for (int i = 0; i < ROWS; i++) {
+    for (int i = 0; i < actual_rows; i++) {
         for (int j = 0; j < SEATS_PER_ROW; j++) {
             double x = 150 + margin + j * (seat_width + margin);
             double y = 150 + margin + i * (seat_height + margin);
 
-             
+            if (get_seat_position("5C", &i_code, &j_code) == 0){
+                g_print("Check row: %d, check column: %d\n", i_code, j_code);
+            }
+            else g_print("Invalid seat code\n");
+            
+
             if (i == 0) {
                 cairo_set_source_rgb(cr, 1.0, 0.75, 0.8);  
             } else if (i == 1 || i == 2) {
@@ -343,7 +350,7 @@ cairo_move_to(
     double margin = 10;
     double offset_x = 150;  
 
-    for (int i = 0; i < ROWS; i++) {
+    for (int i = 0; i < actual_rows; i++) {
         for (int j = 0; j < SEATS_PER_ROW; j++) {
              
             double x = offset_x + margin + j * (seat_width + margin);
