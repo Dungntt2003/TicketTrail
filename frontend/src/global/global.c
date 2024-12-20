@@ -17,6 +17,8 @@ int tem_flight_count;
 Flight detail_flight;
 int seat_count;
 char **seats_array;
+int price = 0;
+int number_seat_order;
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",
@@ -217,4 +219,116 @@ int get_seat_position(const char *seat_code, int *i, int *j) {
     *j = column_ptr - columns; 
 
     return 0; 
+}
+
+char **add_string_to_array(char **array, int *size, const char *new_string) {
+    char **new_array = realloc(array, (*size + 1) * sizeof(char *));
+    if (!new_array) {
+        perror("Failed to reallocate memory");
+        return array; 
+    }
+    new_array[*size] = strdup(new_string); 
+    if (!new_array[*size]) {
+        perror("Failed to duplicate string");
+        return new_array;
+    }
+    (*size)++; 
+    return new_array;
+}
+
+char **remove_string_from_array(char **array, int *size, const char *target) {
+    int index = -1;
+    
+    for (int i = 0; i < *size; i++) {
+        if (strcmp(array[i], target) == 0) { 
+            index = i;
+            break;
+        }
+    }
+    if (index == -1) { 
+        printf("String '%s' not found in the array\n", target);
+        return array;
+    }
+    free(array[index]); 
+    
+    for (int i = index; i < *size - 1; i++) {
+        array[i] = array[i + 1];
+    }
+    
+    char **new_array = realloc(array, (*size - 1) * sizeof(char *));
+    if (!new_array && *size > 1) { 
+        perror("Failed to reallocate memory");
+        return array; 
+    }
+    (*size)--; 
+    return new_array;
+}
+
+void print_array(char **array, int size) {
+    printf("Array:\n");
+    for (int i = 0; i < size; i++) {
+        printf("  [%d]: %s\n", i, array[i]);
+    }
+}
+
+char *join_strings(char **array, int size, const char *delimiter) {
+    if (size == 0) {
+        return strdup(""); 
+    }
+    
+    int total_length = 0;
+    int delimiter_length = strlen(delimiter);
+    for (int i = 0; i < size; i++) {
+        total_length += strlen(array[i]);
+        if (i < size - 1) {
+            total_length += delimiter_length; 
+        }
+    }    
+    char *result = malloc(total_length + 1); 
+    if (!result) {
+        perror("Memory allocation failed");
+        return NULL;
+    }
+    result[0] = '\0'; 
+    for (int i = 0; i < size; i++) {
+        strcat(result, array[i]);
+        if (i < size - 1) {
+            strcat(result, delimiter);
+        }
+    }
+
+    return result;
+}
+
+int time_to_seconds(const char *time) {
+    int hh, mm, ss;
+    sscanf(time, "%d:%d:%d", &hh, &mm, &ss);
+    return hh * 3600 + mm * 60 + ss;
+}
+
+
+void seconds_to_time(int total_seconds, char *time_str) {
+    int hh = (total_seconds / 3600) % 24; 
+    int mm = (total_seconds % 3600) / 60; 
+    int ss = total_seconds % 60;         
+    sprintf(time_str, "%02d:%02d:%02d", hh, mm, ss);
+}
+
+
+char *calculate_end_time(const char *start_time, int duration) {
+    
+    int start_seconds = time_to_seconds(start_time);
+
+    
+    int end_seconds = start_seconds + duration;
+
+    
+    char *end_time = malloc(9); 
+    if (!end_time) {
+        perror("Memory allocation failed");
+        return NULL;
+    }
+    seconds_to_time(end_seconds, end_time);
+
+    return end_time;
 }

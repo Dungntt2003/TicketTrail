@@ -11,6 +11,9 @@
 #define SEATS_PER_ROW 10
 int actual_rows = 20;
 int i_code, j_code;
+int ordered[ROWS][SEATS_PER_ROW];
+char **temp_seats = NULL;
+int tem_seats_size = 0;
 typedef struct {
     int row;
     int seat;
@@ -19,18 +22,16 @@ typedef struct {
 } Seat;
 Seat seats[ROWS][SEATS_PER_ROW];
 
-const char *departure_city = "HA NOI";
-const char *departure_airport = "Noi Bai Airport";
-const char *arrival_city = "HO CHI MINH";
-const char *arrival_airport = "Tan Son Nhat Airport";
-const char *departure_date = "08/12/24"; 
-const char *arrival_date = "08/12/24";  
-const char *departure_time = "9:30 PM";   
-const char *arrival_time = "12:30 PM"; 
-const char *ticket_price = "$240"; 
 char selected_seat_label[4] = "";  
 
 void initialize_seats() {
+    memset(ordered, 0, sizeof(ordered));
+    for (int i = 0; i < seat_count; i++){
+        if (get_seat_position(seats_array[i], &i_code, &j_code) == 0){
+            ordered[i_code][j_code] = 1;
+        }
+    }
+
     actual_rows = detail_flight.capacity/10;
     const char *columns = "ABCDEFGHIJ";
     for (int i = 0; i < actual_rows; i++) {
@@ -45,6 +46,9 @@ void initialize_seats() {
 
 
 static gboolean on_book_seat_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
+    char date[20];
+    char time[20];
+    split_date_time(detail_flight.departure_time, date, time);
     GdkPixbuf *bg_pixbuf;
     GdkPixbuf *scaled_pixbuf;
 
@@ -110,12 +114,6 @@ double seat_width = 30, seat_height = 30;
             double x = 150 + margin + j * (seat_width + margin);
             double y = 150 + margin + i * (seat_height + margin);
 
-            if (get_seat_position("5C", &i_code, &j_code) == 0){
-                g_print("Check row: %d, check column: %d\n", i_code, j_code);
-            }
-            else g_print("Invalid seat code\n");
-            
-
             if (i == 0) {
                 cairo_set_source_rgb(cr, 1.0, 0.75, 0.8);  
             } else if (i == 1 || i == 2) {
@@ -126,6 +124,9 @@ double seat_width = 30, seat_height = 30;
 
              
             if (seats[i][j].selected) {
+                cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);  
+            }
+            if (ordered[i][j] ==  1){
                 cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);  
             }
 
@@ -140,8 +141,6 @@ double seat_width = 30, seat_height = 30;
     }
 
 
-
-     
      
     GdkPixbuf *airline_logo = gdk_pixbuf_new_from_file("../assets/images/airline.png", NULL);
     if (airline_logo) {
@@ -165,26 +164,26 @@ double seat_width = 30, seat_height = 30;
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
     cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 100);
-    cairo_show_text(cr, departure_city);
+    cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
      
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
     cairo_move_to(cr, (screen_width - 936) / 2 + 580, (screen_height - 588) / 2 + 115);
-    cairo_show_text(cr, departure_airport);
+    cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
      
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
     cairo_move_to(cr, (screen_width - 936) / 2 + 730, (screen_height - 588) / 2 + 100);
     cairo_set_font_size(cr, 14);
-    cairo_show_text(cr, arrival_city);
+    cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
      
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_move_to(cr, (screen_width - 936) / 2 + 720, (screen_height - 588) / 2 + 115);
     cairo_set_font_size(cr, 12);
-    cairo_show_text(cr, "Tan Son Nhat Airport");
+    cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
      
     GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../assets/images/flight-icon.png", NULL);
@@ -223,20 +222,20 @@ cairo_stroke(cr);
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
     cairo_move_to(cr, (screen_width - 936) / 2 + 870, (screen_height - 588) / 2 + 100);
-    cairo_show_text(cr, departure_date);
+    cairo_show_text(cr, date);
 
      
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
     cairo_move_to(cr, (screen_width - 936) / 2 + 870, (screen_height - 588) / 2 + 115);
-    cairo_show_text(cr, departure_time);
+    cairo_show_text(cr, time);
 
      
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
     cairo_move_to(cr, (screen_width - 936) / 2 + 970, (screen_height - 588) / 2 + 100);
     cairo_set_font_size(cr, 14);
-    cairo_show_text(cr, arrival_date);
+    cairo_show_text(cr, date);
 
        
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
@@ -248,7 +247,7 @@ cairo_stroke(cr);
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_move_to(cr, (screen_width - 936) / 2 + 970, (screen_height - 588) / 2 + 115);
     cairo_set_font_size(cr, 12);
-    cairo_show_text(cr, arrival_time);  
+    cairo_show_text(cr,calculate_end_time(time, detail_flight.duration_minutes * 60));  
 
 
      
@@ -314,32 +313,42 @@ cairo_stroke(cr);
     cairo_set_font_size(cr, 14);
     cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 550);
     cairo_show_text(cr, "Seat number: ");
-    cairo_show_text(cr, selected_seat_label); 
+    cairo_show_text(cr, join_strings(temp_seats, tem_seats_size, ", ")); 
+
+    cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 14);
+
+    char price_text[32];
+    snprintf(price_text, sizeof(price_text), "Price: %s VND", format_number_with_separator(price, ','));
+
+    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 570);  
+    cairo_show_text(cr, price_text);
 
     
-cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);  
-cairo_new_path(cr);
-cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 8, 8, M_PI, 3 * M_PI / 2);  
-cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 8, 8, 3 * M_PI / 2, 2 * M_PI);  
-cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, 0, M_PI / 2);  
-cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, M_PI / 2, M_PI);  
-cairo_close_path(cr);
-cairo_fill_preserve(cr);  
-cairo_stroke(cr);  
+    cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);  
+    cairo_new_path(cr);
+    cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 8, 8, M_PI, 3 * M_PI / 2);  
+    cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 8, 8, 3 * M_PI / 2, 2 * M_PI);  
+    cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, 0, M_PI / 2);  
+    cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, M_PI / 2, M_PI);  
+    cairo_close_path(cr);
+    cairo_fill_preserve(cr);  
+    cairo_stroke(cr);  
 
  
-cairo_set_source_rgb(cr, 0.92, 0.94, 0.94);  
-cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);  
-cairo_set_font_size(cr, 16);  
+    cairo_set_source_rgb(cr, 0.92, 0.94, 0.94);  
+    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);  
+    cairo_set_font_size(cr, 16);  
 
  
-cairo_text_extents_t confirm_extents;
-cairo_text_extents(cr, "Confirm", &confirm_extents);
-cairo_move_to(
-    cr,
-    screen_width - 70 - 120 / 2 - confirm_extents.width / 2,  
-    (screen_height - 588) / 2 + 530 + 40 / 2 + confirm_extents.height / 2  
-);
+    cairo_text_extents_t confirm_extents;
+    cairo_text_extents(cr, "Confirm", &confirm_extents);
+    cairo_move_to(
+        cr,
+        screen_width - 70 - 120 / 2 - confirm_extents.width / 2,  
+        (screen_height - 588) / 2 + 530 + 40 / 2 + confirm_extents.height / 2  
+    );
     cairo_show_text(cr, "Confirm");
 
         return FALSE;
@@ -359,15 +368,35 @@ cairo_move_to(
              
             if (event->x >= x && event->x <= x + seat_width && event->y >= y && event->y <= y + seat_height) {
                  
+                 
                 seats[i][j].selected = !seats[i][j].selected;
                 gtk_widget_queue_draw(widget);   
+                if (ordered[i][j] == 1){
+                     gtk_label_set_text(GTK_LABEL(label_status), "Please choose another, this seat is unavailable");
+                     return TRUE;
+                }
 
-                 
                 if (seats[i][j].selected) {
                     strncpy(selected_seat_label, seats[i][j].label, sizeof(selected_seat_label));
                     g_print("Seat selected: %s\n", selected_seat_label);
+                    temp_seats = add_string_to_array(temp_seats, &tem_seats_size, selected_seat_label);
+                    if (i == 0){
+                        price += detail_flight.price * 10;
+                    }
+                    else if (i == 1 || i == 2){
+                        price += detail_flight.price * 5;
+                    }
+                    else price += detail_flight.price;
                 } else {
                     g_print("Seat deselected: %s\n", seats[i][j].label);
+                    temp_seats = remove_string_from_array(temp_seats, &tem_seats_size, selected_seat_label);
+                    if (i == 0){
+                        price -= detail_flight.price * 10;
+                    }
+                    else if (i == 1 || i == 2){
+                        price -= detail_flight.price * 5;
+                    }
+                    else price -= detail_flight.price;
                 }
                 return TRUE;
             }
@@ -392,6 +421,20 @@ cairo_move_to(
 
     gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
     gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
+
+    label_status = gtk_label_new("");
+    gtk_box_pack_start(GTK_BOX(main_box), label_status, FALSE, FALSE, 0);
+    GtkCssProvider *css_provider_label = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(css_provider_label,
+        "label {"
+        "   color: red;"  // Đặt màu chữ thành đỏ
+        "}",
+        -1, NULL);
+
+    // Áp dụng CSS cho label
+    gtk_style_context_add_provider(gtk_widget_get_style_context(label_status),
+    GTK_STYLE_PROVIDER(css_provider_label), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
 
     return main_box;
 }
