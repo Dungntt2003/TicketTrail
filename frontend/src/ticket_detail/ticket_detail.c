@@ -50,7 +50,7 @@ gboolean on_mouse_click_ticket_detail(GtkWidget *widget, GdkEventButton *event, 
         bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
         if (bytes_received <= 0) {
             perror("Error receiving seats data");
-            return;
+            return TRUE;
         }
         buffer[bytes_received] = '\0'; 
 

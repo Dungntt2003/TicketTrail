@@ -6,6 +6,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include "../global/global.h"
+#include "../payment/payment.h"
 
 #define ROWS 30
 #define SEATS_PER_ROW 10
@@ -14,6 +15,7 @@ int i_code, j_code;
 int ordered[ROWS][SEATS_PER_ROW];
 char **temp_seats = NULL;
 int tem_seats_size = 0;
+double button_x, button_y, button_width = 120, button_height = 40;
 typedef struct {
     int row;
     int seat;
@@ -325,30 +327,29 @@ cairo_stroke(cr);
     cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 570);  
     cairo_show_text(cr, price_text);
 
-    
-    cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);  
+    button_x = screen_width - 70 - button_width;
+    button_y = (screen_height - 588) / 2 + 530;
+
+    // Vẽ nút Confirm
+    cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);
     cairo_new_path(cr);
-    cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 8, 8, M_PI, 3 * M_PI / 2);  
-    cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 8, 8, 3 * M_PI / 2, 2 * M_PI);  
-    cairo_arc(cr, screen_width - 70 - 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, 0, M_PI / 2);  
-    cairo_arc(cr, screen_width - 70 - 120 + 8, (screen_height - 588) / 2 + 530 + 40 - 8, 8, M_PI / 2, M_PI);  
+    cairo_arc(cr, button_x + 8, button_y + 8, 8, M_PI, 3 * M_PI / 2);
+    cairo_arc(cr, button_x + button_width - 8, button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
+    cairo_arc(cr, button_x + button_width - 8, button_y + button_height - 8, 8, 0, M_PI / 2);
+    cairo_arc(cr, button_x + 8, button_y + button_height - 8, 8, M_PI / 2, M_PI);
     cairo_close_path(cr);
-    cairo_fill_preserve(cr);  
-    cairo_stroke(cr);  
+    cairo_fill_preserve(cr);
+    cairo_stroke(cr);
 
- 
-    cairo_set_source_rgb(cr, 0.92, 0.94, 0.94);  
-    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);  
-    cairo_set_font_size(cr, 16);  
+    cairo_set_source_rgb(cr, 0.92, 0.94, 0.94);
+    cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 16);
 
- 
     cairo_text_extents_t confirm_extents;
     cairo_text_extents(cr, "Confirm", &confirm_extents);
-    cairo_move_to(
-        cr,
-        screen_width - 70 - 120 / 2 - confirm_extents.width / 2,  
-        (screen_height - 588) / 2 + 530 + 40 / 2 + confirm_extents.height / 2  
-    );
+    cairo_move_to(cr,
+                  button_x + button_width / 2 - confirm_extents.width / 2,
+                  button_y + button_height / 2 + confirm_extents.height / 2);
     cairo_show_text(cr, "Confirm");
 
         return FALSE;
@@ -358,6 +359,15 @@ cairo_stroke(cr);
     double seat_width = 30, seat_height = 30;
     double margin = 10;
     double offset_x = 150;  
+
+     if (event->x >= button_x && event->x <= button_x + button_width &&
+        event->y >= button_y && event->y <= button_y + button_height) {
+        g_print("Confirm button clicked!\n");
+        GtkWidget *payment_window = create_payment_window();
+        set_content(payment_window);
+        return TRUE;
+    }
+
 
     for (int i = 0; i < actual_rows; i++) {
         for (int j = 0; j < SEATS_PER_ROW; j++) {
