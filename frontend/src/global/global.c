@@ -19,6 +19,10 @@ int seat_count;
 char **seats_array;
 int price = 0;
 int number_seat_order;
+int final_price;
+char class[30];
+char **temp_seats = NULL;
+int tem_seats_size = 0;
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",

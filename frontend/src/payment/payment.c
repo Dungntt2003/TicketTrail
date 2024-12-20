@@ -2,47 +2,28 @@
 #include <cairo.h>
 #include <math.h>
 #include "../global/global.h"
-const char *departure_city = "HA NOI";
-const char *departure_airport = "Noi Bai Airport";
-const char *arrival_city = "HO CHI MINH";
-const char *arrival_airport = "Tan Son Nhat Airport";
-const char *selected_date = "08/12/2024";  
-const char *selected_time = "9:30 PM";
-const char *ticket_price = "$240";
-const char *flight_code = "IN 230";
 const char *gate_code= "22";
-const char *seat_code= "2B, 3B";
-const char *class_number= "Economy";
+
 int selected_voucher = -1;
-double original_price = 240000.0; // Original ticket price
-double discounted_price = 240000.0;
+double discounted_price = 0;
 char error_message[256] = "";
 time_t error_start_time = 0;
 
 // Function to calculate discounted price
 double calculate_discounted_price(int voucher_index) {
-    if (voucher_index == -1) return original_price;
+    if (voucher_index == -1) return price;
 
     switch (voucher_index) {
-        case 0: return original_price - 200000; // Welcome Voucher
-        case 1: return original_price * 0.75;  // 25% OFF
+        case 0: return price - 200000; // Welcome Voucher
+        case 1: return price * 0.75;  // 25% OFF
         case 2: {
             // Group Travel Discount: Requires at least 3 seats
-            int seat_count = 0;
-            for (const char *c = seat_code; *c; c++) {
-                if (*c == ',') seat_count++;
-            }
-            seat_count++; // Count the last seat
-            if (seat_count < 3) {
-                snprintf(error_message, sizeof(error_message),
-                         "You must purchase\nat least 3 tickets\nto apply this voucher.");
-                error_start_time = time(NULL);
-                return original_price;
-            }
-            return original_price * 0.8; // 20% OFF
+            if (tem_seats_size < 3)
+               return price;
+            return price * 0.8; // 20% OFF
         }
-        case 3: return original_price * 0.9; // 10% OFF
-        default: return original_price;
+        case 3: return price * 0.9; // 10% OFF
+        default: return price;
     }
 }
 
@@ -120,7 +101,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         event->y <= popup_close_button_y + popup_close_button_size) {
         error_message[0] = '\0';
         selected_voucher = -1;
-        discounted_price = original_price;
+        discounted_price = price;
         gtk_widget_queue_draw(widget);
         return TRUE;
     }
@@ -134,7 +115,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
             selected_voucher = i;
             discounted_price = calculate_discounted_price(i);
 
-            if (selected_voucher != 2 || discounted_price != original_price) {
+            if (selected_voucher != 2 || discounted_price != price) {
                 error_message[0] = '\0';
             }
 
@@ -148,6 +129,9 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
 }
 
 static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
+    char time[20];
+    char date[20];
+    split_date_time(detail_flight.departure_time, date, time);
     GdkPixbuf *bg_pixbuf;
     GdkPixbuf *scaled_pixbuf;
 
@@ -298,9 +282,8 @@ static gboolean on_payment_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
         g_object_unref(logo_pixbuf);
     }
 
-    
 const char *flight_labels[4] = {"Flight", "Gate", "Seat", "Class"};
-const char *flight_info[4] = {flight_code, gate_code, seat_code, class_number};
+const char *flight_info[4] = {detail_flight.flight_id, gate_code, join_strings(temp_seats, tem_seats_size, ", "), class};
 
 
 int label_font_size = 18;
@@ -364,8 +347,8 @@ double flight_icon_y = screen_height / 2 - 300 + 180;
 
 
 cairo_text_extents_t departure_city_extents, arrival_city_extents;
-cairo_text_extents(cr, departure_city, &departure_city_extents);
-cairo_text_extents(cr, arrival_city, &arrival_city_extents);
+cairo_text_extents(cr, extract_middle_string(detail_flight.departure_airport), &departure_city_extents);
+cairo_text_extents(cr,  extract_middle_string(detail_flight.arrival_airport), &arrival_city_extents);
 
 
 double flight_icon_x = right_half_center_x - 156 / 2; 
@@ -384,16 +367,16 @@ cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 cairo_set_font_size(cr, 20);
 cairo_move_to(cr, departure_city_x, departure_city_y);
-if (departure_city) cairo_show_text(cr, departure_city);
+if (detail_flight.departure_airport) cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
 
 cairo_move_to(cr, arrival_city_x, arrival_city_y);
-if (arrival_city) cairo_show_text(cr, arrival_city);
+if (detail_flight.arrival_airport) cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
 
 cairo_text_extents_t departure_airport_extents, arrival_airport_extents;
-cairo_text_extents(cr, departure_airport, &departure_airport_extents);
-cairo_text_extents(cr, arrival_airport, &arrival_airport_extents);
+cairo_text_extents(cr, extract_middle_string(detail_flight.departure_airport), &departure_airport_extents);
+cairo_text_extents(cr, extract_middle_string(detail_flight.arrival_airport), &arrival_airport_extents);
 
 double departure_airport_y = departure_city_y + (departure_city_extents.height + 20); 
 double arrival_airport_y = arrival_city_y + (arrival_city_extents.height + 20); 
@@ -403,11 +386,11 @@ cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 cairo_set_font_size(cr, 18);
 cairo_move_to(cr, departure_city_x + departure_city_extents.width / 2 - departure_airport_extents.width / 2, departure_airport_y);
-if (departure_airport) cairo_show_text(cr, departure_airport);
+if (detail_flight.departure_airport) cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
 
 cairo_move_to(cr, arrival_city_x + arrival_city_extents.width / 2 - arrival_airport_extents.width / 2, arrival_airport_y);
-if (arrival_airport) cairo_show_text(cr, arrival_airport);
+if (detail_flight.arrival_airport) cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
 
 GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../assets/images/flight-icon.png", NULL);
@@ -438,10 +421,10 @@ cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 cairo_set_font_size(cr, 18);
 cairo_text_extents_t date_text_extents;
-cairo_text_extents(cr, selected_date, &date_text_extents);
+cairo_text_extents(cr, date, &date_text_extents);
 double date_text_y = screen_height / 2 - 300 + 270 + (46 - date_text_extents.height) / 2;
 cairo_move_to(cr, date_x + 20 + 8 + 10, date_text_y);
-cairo_show_text(cr, selected_date);
+cairo_show_text(cr,date);
 
 
 double time_x = screen_width / 2 + (500 - 400) / 2 + 230;
@@ -461,10 +444,10 @@ cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 cairo_set_font_size(cr, 18);
 cairo_text_extents_t time_text_extents;
-cairo_text_extents(cr, selected_time, &time_text_extents);
+cairo_text_extents(cr, time, &time_text_extents);
 double time_text_y = screen_height / 2 - 300 + 270 + (46 - time_text_extents.height) / 2;
 cairo_move_to(cr, time_x + 20 + 8 + 10, time_text_y);
-cairo_show_text(cr, selected_time);
+cairo_show_text(cr, time);
 
 
     
@@ -472,7 +455,6 @@ cairo_show_text(cr, selected_time);
 
 // Define the text for Price and its value
 const char *price_label = "Price";
-const char *price_value = ticket_price;
 
 // Calculate the total width of the Price label and the old price group
 cairo_text_extents_t price_label_extents, price_value_extents, new_price_extents;
@@ -481,7 +463,7 @@ cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_B
 cairo_text_extents(cr, price_label, &price_label_extents);
 
 cairo_set_font_size(cr, 24);
-cairo_text_extents(cr, price_value, &price_value_extents);
+cairo_text_extents(cr, format_number_with_separator(price, ','), &price_value_extents);
 
 // Calculate the width for "Price" label + old price
 double total_width = price_label_extents.width + 10 + price_value_extents.width; // 10px gap between label and value
@@ -504,15 +486,15 @@ if (selected_voucher == -1 || (selected_voucher == 2 && error_message[0])) {
     // Display only the original price without a strikethrough
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); // Black color
     cairo_move_to(cr, old_price_x, base1_y);
-    cairo_show_text(cr, price_value);
+    cairo_show_text(cr, format_number_with_separator(price, ','));
 } else {
     // Display old price with a strikethrough
     cairo_set_source_rgb(cr, 0.6, 0.6, 0.6); // Gray color
     cairo_move_to(cr, old_price_x, base1_y);
-    cairo_show_text(cr, price_value);
+    cairo_show_text(cr, format_number_with_separator(price, ','));
 
     // Draw strikethrough line for old price
-    cairo_text_extents(cr, price_value, &price_value_extents);
+    cairo_text_extents(cr, format_number_with_separator(price, ','), &price_value_extents);
     double strikethrough_start_x = old_price_x;
     double strikethrough_end_x = old_price_x + price_value_extents.width;
     double strikethrough_y = base1_y - price_value_extents.height / 2;
@@ -522,7 +504,7 @@ if (selected_voucher == -1 || (selected_voucher == 2 && error_message[0])) {
 
     // Draw new price below the old price
     char new_price[64];
-    snprintf(new_price, sizeof(new_price), "%.0f VND", discounted_price);
+    snprintf(new_price, sizeof(new_price), "%s VND", format_number_with_separator(discounted_price, ','));
     cairo_text_extents(cr, new_price, &new_price_extents);
 
     double new_price_x = old_price_x + (price_value_extents.width - new_price_extents.width) / 2;

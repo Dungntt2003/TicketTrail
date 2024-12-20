@@ -72,6 +72,9 @@ void on_list_link_click(GtkWidget *widget, gpointer data) {
     
     filter_flights(flights, flight_count, tem_flights, &tem_flight_count, from, to, date_text, selected_class, atoi(traveller));
     number_seat_order = atoi(traveller);
+    strncpy(class, selected_class, sizeof(class) - 1);
+    class[sizeof(class) - 1] = '\0';
+
     for (int i = 0; i < tem_flight_count; i++){
         printf("ID of flight: %s\n", tem_flights[i].flight_id);
     }

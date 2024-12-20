@@ -13,8 +13,6 @@
 int actual_rows = 20;
 int i_code, j_code;
 int ordered[ROWS][SEATS_PER_ROW];
-char **temp_seats = NULL;
-int tem_seats_size = 0;
 double button_x, button_y, button_width = 120, button_height = 40;
 typedef struct {
     int row;
@@ -363,6 +361,10 @@ cairo_stroke(cr);
      if (event->x >= button_x && event->x <= button_x + button_width &&
         event->y >= button_y && event->y <= button_y + button_height) {
         g_print("Confirm button clicked!\n");
+        if (tem_seats_size == 0){
+            gtk_label_set_text(GTK_LABEL(label_status), "Choose a least 1 seat");
+            return TRUE;
+        }
         GtkWidget *payment_window = create_payment_window();
         set_content(payment_window);
         return TRUE;
