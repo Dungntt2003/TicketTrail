@@ -3,6 +3,7 @@
 #include <cairo.h>
 #include <math.h>
 #include "../global/global.h"
+#include "../booklist/booklist.h"
 const char *gate_code= "22";
 
 int selected_voucher = -1;
@@ -108,6 +109,8 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
         event->y >= button_y_payment && event->y <= button_y_payment + 56) {
         printf("Confirm button clicked!\n");
+        GtkWidget *book_list_window =  create_booklist_window();
+        set_content(book_list_window);
         return true;
     }
 
