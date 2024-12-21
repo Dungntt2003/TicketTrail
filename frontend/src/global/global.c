@@ -226,6 +226,19 @@ int get_seat_position(const char *seat_code, int *i, int *j) {
 }
 
 char **add_string_to_array(char **array, int *size, const char *new_string) {
+    int index = -1;
+    
+    for (int i = 0; i < *size; i++) {
+        if (strcmp(array[i], new_string) == 0) { 
+            index = i;
+            break;
+        }
+    }
+    if (index != -1) { 
+        printf("String '%s' not found in the array\n", new_string);
+        return array;
+    }
+
     char **new_array = realloc(array, (*size + 1) * sizeof(char *));
     if (!new_array) {
         perror("Failed to reallocate memory");

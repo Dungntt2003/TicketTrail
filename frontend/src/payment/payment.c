@@ -1,4 +1,5 @@
 #include "../payment/payment.h"
+#include "../book_seat/book_seat.h"
 #include <cairo.h>
 #include <math.h>
 #include "../global/global.h"
@@ -8,6 +9,8 @@ int selected_voucher = -1;
 double discounted_price = 0;
 char error_message[256] = "";
 time_t error_start_time = 0;
+
+double button_y_payment, cancel_button_x, confirm_button_x;
 
 // Function to calculate discounted price
 double calculate_discounted_price(int voucher_index) {
@@ -26,6 +29,7 @@ double calculate_discounted_price(int voucher_index) {
         default: return price;
     }
 }
+
 
 // Draw error popup
 double popup_close_button_x, popup_close_button_y, popup_close_button_size = 24;
@@ -93,6 +97,19 @@ void draw_error_popup(cairo_t *cr, gint screen_width, gint screen_height) {
 static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
     gint screen_width = gtk_widget_get_allocated_width(widget);
     gint screen_height = gtk_widget_get_allocated_height(widget);
+    if (event->x >= cancel_button_x && event->x <= cancel_button_x + 156 &&
+        event->y >= button_y_payment && event->y <= button_y_payment + 56) {
+        printf("Cancel button clicked!\n");
+        GtkWidget *book_seat_window = create_book_seat_window();
+        set_content(book_seat_window);
+        return true;
+    }
+
+    if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
+        event->y >= button_y_payment && event->y <= button_y_payment + 56) {
+        printf("Confirm button clicked!\n");
+        return true;
+    }
 
     if (error_message[0] &&
         event->x >= popup_close_button_x &&
@@ -514,22 +531,22 @@ if (selected_voucher == -1 || (selected_voucher == 2 && error_message[0])) {
     cairo_show_text(cr, new_price);
 }
 
-// Draw error popup if necessary
-draw_error_popup(cr, screen_width, screen_height);
+    // Draw error popup if necessary
+    draw_error_popup(cr, screen_width, screen_height);
 
 
     
-    double button_y = screen_height / 2 + 300 - 80;
-    double cancel_button_x = screen_width / 2 + 250 - 180 - 10;
-    double confirm_button_x = screen_width / 2 + 250 + 10;
+    button_y_payment = screen_height / 2 + 300 - 80;
+    cancel_button_x = screen_width / 2 + 250 - 180 - 10;
+    confirm_button_x = screen_width / 2 + 250 + 10;
 
     
     cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
     cairo_new_path(cr);
-    cairo_arc(cr, cancel_button_x + 8, button_y + 8, 8, M_PI, 3 * M_PI / 2); 
-    cairo_arc(cr, cancel_button_x + 156 - 8, button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI); 
-    cairo_arc(cr, cancel_button_x + 156 - 8, button_y + 56 - 8, 8, 0, M_PI / 2); 
-    cairo_arc(cr, cancel_button_x + 8, button_y + 56 - 8, 8, M_PI / 2, M_PI); 
+    cairo_arc(cr, cancel_button_x + 8, button_y_payment + 8, 8, M_PI, 3 * M_PI / 2); 
+    cairo_arc(cr, cancel_button_x + 156 - 8, button_y_payment + 8, 8, 3 * M_PI / 2, 2 * M_PI); 
+    cairo_arc(cr, cancel_button_x + 156 - 8, button_y_payment + 56 - 8, 8, 0, M_PI / 2); 
+    cairo_arc(cr, cancel_button_x + 8, button_y_payment + 56 - 8, 8, M_PI / 2, M_PI); 
     cairo_close_path(cr);
     cairo_fill_preserve(cr);
     cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
@@ -544,17 +561,17 @@ draw_error_popup(cr, screen_width, screen_height);
     cairo_move_to(
         cr,
         cancel_button_x + 156 / 2 - cancel_extents.width / 2,
-        button_y + 56 / 2 + cancel_extents.height / 2
+        button_y_payment + 56 / 2 + cancel_extents.height / 2
     );
     cairo_show_text(cr, "Cancel");
 
     
     cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
     cairo_new_path(cr);
-    cairo_arc(cr, confirm_button_x + 8, button_y + 8, 8, M_PI, 3 * M_PI / 2); 
-    cairo_arc(cr, confirm_button_x + 156 - 8, button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI); 
-    cairo_arc(cr, confirm_button_x + 156 - 8, button_y + 56 - 8, 8, 0, M_PI / 2); 
-    cairo_arc(cr, confirm_button_x + 8, button_y + 56 - 8, 8, M_PI / 2, M_PI); 
+    cairo_arc(cr, confirm_button_x + 8, button_y_payment + 8, 8, M_PI, 3 * M_PI / 2); 
+    cairo_arc(cr, confirm_button_x + 156 - 8, button_y_payment + 8, 8, 3 * M_PI / 2, 2 * M_PI); 
+    cairo_arc(cr, confirm_button_x + 156 - 8, button_y_payment + 56 - 8, 8, 0, M_PI / 2); 
+    cairo_arc(cr, confirm_button_x + 8, button_y_payment + 56 - 8, 8, M_PI / 2, M_PI); 
     cairo_close_path(cr);
     cairo_fill_preserve(cr);
     cairo_stroke(cr);
@@ -568,7 +585,7 @@ draw_error_popup(cr, screen_width, screen_height);
     cairo_move_to(
         cr,
         confirm_button_x + 156 / 2 - confirm_extents.width / 2,
-        button_y + 56 / 2 + confirm_extents.height / 2
+        button_y_payment + 56 / 2 + confirm_extents.height / 2
     );
     cairo_show_text(cr, "Confirm");
 

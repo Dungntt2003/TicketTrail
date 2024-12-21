@@ -13,6 +13,7 @@
 int actual_rows = 20;
 int i_code, j_code;
 int ordered[ROWS][SEATS_PER_ROW];
+int temp_ordered[ROWS][SEATS_PER_ROW];
 double button_x, button_y, button_width = 120, button_height = 40;
 typedef struct {
     int row;
@@ -25,12 +26,6 @@ Seat seats[ROWS][SEATS_PER_ROW];
 char selected_seat_label[4] = "";  
 
 void initialize_seats() {
-    memset(ordered, 0, sizeof(ordered));
-    for (int i = 0; i < seat_count; i++){
-        if (get_seat_position(seats_array[i], &i_code, &j_code) == 0){
-            ordered[i_code][j_code] = 1;
-        }
-    }
 
     actual_rows = detail_flight.capacity/10;
     const char *columns = "ABCDEFGHIJ";
@@ -40,6 +35,21 @@ void initialize_seats() {
             seats[i][j].seat = j + 1;
             seats[i][j].selected = FALSE;
             snprintf(seats[i][j].label, sizeof(seats[i][j].label), "%d%c", i + 1, columns[j]);
+        }
+    }
+
+    memset(ordered, 0, sizeof(ordered));
+    memset(temp_ordered, 0, sizeof(temp_ordered));
+    for (int i = 0; i < seat_count; i++){
+        if (get_seat_position(seats_array[i], &i_code, &j_code) == 0){
+            ordered[i_code][j_code] = 1;
+            seats[i_code][j_code].selected = TRUE;
+        }
+    }
+    for (int i = 0; i < tem_seats_size; i++){
+        if (get_seat_position(temp_seats[i], &i_code, &j_code) == 0){
+            temp_ordered[i_code][j_code] = 1;
+            seats[i_code][j_code].selected = TRUE;
         }
     }
 }
@@ -129,7 +139,9 @@ double seat_width = 30, seat_height = 30;
             if (ordered[i][j] ==  1){
                 cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);  
             }
-
+            // if (temp_ordered[i][j] ==  1){
+            //     cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);  
+            // }
             cairo_rectangle(cr, x, y, seat_width, seat_height);
             cairo_fill(cr);
 
