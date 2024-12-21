@@ -128,3 +128,18 @@ CREATE TABLE booking_details (
     seat_code varchar(255),
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
 );
+
+
+-- get all ticket with user id 
+-- use ticketrail;
+-- SELECT f.flight_id, f.departure_time, f.duration_minutes, al.name, da.airport_id, da.name, da.city, aa.airport_id, aa.name, aa.city, b.total_price FROM flights f JOIN airplanes ap ON f.airplane_id = ap.airplane_id JOIN airlines al ON ap.airline_id = al.airline_id JOIN airports da ON f.departure_airport = da.airport_id JOIN airports aa ON f.arrival_airport = aa.airport_id JOIN bookings b ON f.flight_id = b.flight_id JOIN booking_details bd ON b.booking_id = bd.booking_id WHERE user_id = ?;
+
+
+-- create a booking
+-- use ticketrail;
+-- insert into bookings (booking_time, total_price, user_id, flight_id) values ('2024-12-21', 1000000, 3, 'VN007');
+-- SELECT LAST_INSERT_ID();
+-- insert into booking_details (booking_id, type, seat_code) values (3, 'Economy', '10A');
+
+
+
