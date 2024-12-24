@@ -16,8 +16,8 @@ typedef struct {
     int booking_id;
 } Ticket;
 
-char* join_with_dash(const char* row1, const char* row2, const char* row3);
+char* join_with_dash2(const char* row1, const char* row2, const char* row3);
 int fetch_tickets(Ticket **tickets, int *count, int user_id);
-char* get_seat_codes_by_booking_id(int *seat_count,const int booking_id);
+char* get_seat_codes_by_booking_id(int *seat_counts,const int booking_id);
 
 #endif 

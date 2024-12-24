@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-int seat_count = 0;
+int seat_counts = 0;
 
-char* join_with_dash(const char* row1, const char* row2, const char* row3) {
+char* join_with_dash2(const char* row1, const char* row2, const char* row3) {
 
     size_t length = strlen(row1) + strlen(row2) + strlen(row3) + 3; 
 
@@ -62,11 +62,11 @@ int fetch_tickets(Ticket **tickets, int *count, int user_id) {
         strncpy((*tickets)[i].departure_time, row[1], sizeof((*tickets)[i].departure_time) - 1);
         (*tickets)[i].duration_minutes= atoi(row[2]);
         strncpy((*tickets)[i].airplane_name, row[3], sizeof((*tickets)[i].airplane_name) - 1);
-        strncpy((*tickets)[i].departure_airport, join_with_dash(row[4], row[5], row[6]), sizeof((*tickets)[i].departure_airport) - 1);
-        strncpy((*tickets)[i].arrival_airport, join_with_dash(row[7], row[8], row[9]), sizeof((*tickets)[i].arrival_airport) - 1);
+        strncpy((*tickets)[i].departure_airport, join_with_dash2(row[4], row[5], row[6]), sizeof((*tickets)[i].departure_airport) - 1);
+        strncpy((*tickets)[i].arrival_airport, join_with_dash2(row[7], row[8], row[9]), sizeof((*tickets)[i].arrival_airport) - 1);
         (*tickets)[i].total_price= atoi(row[10]);
         (*tickets)[i].booking_id= atoi(row[11]);
-        strncpy((*tickets)[i].list_ticket, get_seat_codes_by_booking_id(&seat_count, (*tickets)[i].booking_id), sizeof((*tickets)[i].list_ticket) - 1);
+        strncpy((*tickets)[i].list_ticket, get_seat_codes_by_booking_id(&seat_counts, (*tickets)[i].booking_id), sizeof((*tickets)[i].list_ticket) - 1);
     }
 
     mysql_free_result(res);
@@ -75,7 +75,7 @@ int fetch_tickets(Ticket **tickets, int *count, int user_id) {
     return 0;
 }
 
-char* get_seat_codes_by_booking_id(int *seat_count,const int booking_id) {
+char* get_seat_codes_by_booking_id(int *seat_counts,const int booking_id) {
     MYSQL *conn = connect_db();
     if (conn == NULL) {
         return NULL;
@@ -105,8 +105,8 @@ char* get_seat_codes_by_booking_id(int *seat_count,const int booking_id) {
         return NULL;
     }
 
-    *seat_count = mysql_num_rows(res);
-    if (*seat_count == 0) {
+    *seat_counts = mysql_num_rows(res);
+    if (*seat_counts == 0) {
         mysql_free_result(res);
         disconnect_db(conn);
         return NULL; 

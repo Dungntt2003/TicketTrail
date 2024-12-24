@@ -3,7 +3,7 @@
 #include <cairo.h>
 #include <math.h>
 #include "../global/global.h"
-#include "../booklist/booklist.h"
+// #include "../booklist/booklist.h"
 const char *gate_code= "22";
 
 int selected_voucher = -1;
@@ -109,10 +109,37 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
         event->y >= button_y_payment && event->y <= button_y_payment + 56) {
         printf("Confirm button clicked!\n");
-        GtkWidget *book_list_window =  create_booklist_window();
-        set_content(book_list_window);
-        return true;
-    }
+         int user_id = 3;
+        snprintf(buffer, MAX_LENGTH, "GET LIST TICKETS: %d", user_id);
+        send(sock, buffer, strlen(buffer), 0);
+        printf("Message sent: %s\n", buffer);
+         if (recv(sock, &ticket_count, sizeof(ticket_count), 0) <= 0) {
+            perror("Failed to receive count_ticket");
+            return false;
+        }
+
+        printf("Number of tickets: %d\n", ticket_count);
+
+        // Nhận chuỗi `buffer` chứa thông tin vé
+        int bytes_received = recv(sock, buffer, MAX_LENGTH - 1, 0);
+        if (bytes_received <= 0) {
+            perror("Failed to receive tickets data");
+            return FALSE;
+        }
+
+        buffer[bytes_received] = '\0'; 
+        printf("Tickets data:\n%s\n", buffer);
+
+        char *line = strtok(buffer, "\n");
+        while (line != NULL) {
+            printf("%s\n", line); 
+            line = strtok(NULL, "\n");
+        }
+
+            // GtkWidget *book_list_window =  create_booklist_window();
+            // set_content(book_list_window);
+            return true;
+        }
 
     if (error_message[0] &&
         event->x >= popup_close_button_x &&
