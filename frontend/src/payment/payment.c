@@ -1,4 +1,5 @@
 #include "../payment/payment.h"
+#include "../server_com/server_com.h"
 #include "../book_seat/book_seat.h"
 #include <cairo.h>
 #include <math.h>
@@ -119,23 +120,19 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         }
 
         printf("Number of tickets: %d\n", ticket_count);
-
-        // Nhận chuỗi `buffer` chứa thông tin vé
         int bytes_received = recv(sock, buffer, MAX_LENGTH - 1, 0);
         if (bytes_received <= 0) {
             perror("Failed to receive tickets data");
             return FALSE;
         }
-
-        buffer[bytes_received] = '\0'; 
-        printf("Tickets data:\n%s\n", buffer);
-
-        char *line = strtok(buffer, "\n");
-        while (line != NULL) {
-            printf("%s\n", line); 
-            line = strtok(NULL, "\n");
+        buffer[bytes_received] = '\0';
+        g_print("Receive from server: %s\n", buffer);
+        int ticket_count_temp = parse_buffer_to_tickets(buffer, list_tickets);
+        g_print("Number of tickets: %d\n", ticket_count_temp);
+        for (int i = 0; i < ticket_count_temp; i++){
+            printf("Booking id: %d\n", list_tickets[i].booking_id);
+            printf("Flight id: %s\n", list_tickets[i].flight_id);
         }
-
             // GtkWidget *book_list_window =  create_booklist_window();
             // set_content(book_list_window);
             return true;

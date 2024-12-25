@@ -24,10 +24,10 @@ char seat_code[10];
 
 void format_tickets_to_string(Ticket *tickets, int count_ticket, char *output_buffer) {
     output_buffer[0] = '\0'; 
-
+    int BUFFER_SIZE_MAX = 4096;
     for (int i = 0; i < count_ticket; i++) {
-        char line[BUFFER_SIZE];
-        snprintf(line, BUFFER_SIZE, "%d\t%s\t%s\t%d\t%s\t%s\t%s\t%d\t%s\n",
+        char line[BUFFER_SIZE_MAX];
+        snprintf(line, BUFFER_SIZE_MAX, "%d\t%s\t%s\t%d\t%s\t%s\t%s\t%d\t%s\n",
                  tickets[i].booking_id,
                  tickets[i].flight_id,
                  tickets[i].departure_time,
@@ -37,7 +37,7 @@ void format_tickets_to_string(Ticket *tickets, int count_ticket, char *output_bu
                  tickets[i].arrival_airport,
                  tickets[i].total_price,
                  tickets[i].list_ticket);
-        strncat(output_buffer, line, BUFFER_SIZE - strlen(output_buffer) - 1);
+        strncat(output_buffer, line, BUFFER_SIZE_MAX - strlen(output_buffer) - 1);
     }
 }
 void send_flights(int client_sock, Flight *flights, int count) {
@@ -217,9 +217,10 @@ void *handle_client(void *client_socket) {
                 if (fetch_tickets(&tickets, &count_ticket, user_id) != 0) {
                     fprintf(stderr, "Failed to fetch tickets.\n");
                 }
-                printf("NUmber tickets: %d\n", count_ticket);
+                printf("Number tickets: %d\n", count_ticket);
                 send(sock, &count_ticket, sizeof(count_ticket), 0);
                 format_tickets_to_string(tickets, count_ticket, buffer);
+                printf("Send to client: %s\n", buffer);
                 send(sock, buffer, strlen(buffer), 0);
             }
         }

@@ -112,3 +112,52 @@ void parse_flight_data(char *data, Flight *flights) {
     }
 
 }
+
+int parse_buffer_to_tickets(const char *buffer, Ticket *tickets) {
+    int count = 0;
+    char *line = NULL;
+    char *field = NULL;
+
+    char buffer_copy[BUFFER_SIZE];
+    strncpy(buffer_copy, buffer, BUFFER_SIZE - 1);
+    buffer_copy[BUFFER_SIZE - 1] = '\0'; 
+
+    line = strtok(buffer_copy, "\n");
+    while (line != NULL) { 
+        Ticket ticket = {0}; 
+        char line_copy[BUFFER_SIZE];
+        strncpy(line_copy, line, BUFFER_SIZE - 1); 
+        line_copy[BUFFER_SIZE - 1] = '\0';
+        field = strtok(line_copy, "\t");
+        if (field != NULL) ticket.booking_id = atoi(field);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.flight_id, field, sizeof(ticket.flight_id) - 1);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.departure_time, field, sizeof(ticket.departure_time) - 1);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) ticket.duration_minutes = atoi(field);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.airplane_name, field, sizeof(ticket.airplane_name) - 1);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.departure_airport, field, sizeof(ticket.departure_airport) - 1);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.arrival_airport, field, sizeof(ticket.arrival_airport) - 1);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) ticket.total_price = atoi(field);
+
+        field = strtok(NULL, "\t");
+        if (field != NULL) strncpy(ticket.list_ticket, field, sizeof(ticket.list_ticket) - 1);
+
+        tickets[count++] = ticket;
+        line = strtok(NULL, "\n"); 
+    }
+
+    return count;
+}
