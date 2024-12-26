@@ -27,7 +27,7 @@ void format_tickets_to_string(Ticket *tickets, int count_ticket, char *output_bu
     int BUFFER_SIZE_MAX = 4096;
     for (int i = 0; i < count_ticket; i++) {
         char line[BUFFER_SIZE_MAX];
-        snprintf(line, BUFFER_SIZE_MAX, "%d\t%s\t%s\t%d\t%s\t%s\t%s\t%d\t%s\n",
+        snprintf(line, BUFFER_SIZE_MAX, "%d\n%s\n%s\n%d\n%s\n%s\n%s\n%d\n%s\n",
                  tickets[i].booking_id,
                  tickets[i].flight_id,
                  tickets[i].departure_time,
