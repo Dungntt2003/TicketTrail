@@ -13,7 +13,7 @@ const char *banks[] = {
     "Sacombank"
 };
 
-// CSS application helper
+
 static void apply_css(GtkWidget *widget, const char *css_data) {
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider, css_data, -1, NULL);
@@ -21,11 +21,11 @@ static void apply_css(GtkWidget *widget, const char *css_data) {
     GtkStyleContext *context = gtk_widget_get_style_context(widget);
     gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-    // Ensure the CSS is applied immediately
+    
     gtk_widget_reset_style(widget);
 }
 
-// Draw the background and center rectangle with Cairo
+
 static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
     GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("../assets/images/bg_login.png", NULL);
     if (pixbuf) {
@@ -38,14 +38,14 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data
         g_object_unref(pixbuf);
     }
 
-    // Draw the center rectangle with rounded corners
+    
     double widget_width = gtk_widget_get_allocated_width(widget);
     double widget_height = gtk_widget_get_allocated_height(widget);
     double center_x = (widget_width - 800) / 2.0;
     double center_y = (widget_height - 600) / 2.0;
     double corner_radius = 24.0;
 
-    cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); // Light gray background
+    cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
     cairo_new_path(cr);
     cairo_arc(cr, center_x + corner_radius, center_y + corner_radius, corner_radius, M_PI, 3 * M_PI / 2);
     cairo_arc(cr, center_x + 800 - corner_radius, center_y + corner_radius, corner_radius, 3 * M_PI / 2, 2 * M_PI);
@@ -57,28 +57,28 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data
     return FALSE;
 }
 
-// Handle the Continue button click
+
 static void on_continue_clicked(GtkWidget *widget, gpointer user_data) {
     GtkWidget **fields = (GtkWidget **)user_data;
 
-    // Ensure `fields` is valid
+    
     if (!fields) {
         g_critical("Fields array is NULL.");
         return;
     }
 
-    int all_filled = 1; // Flag to track validation
+    int all_filled = 1; 
 
-    // Iterate over fields
+    
     for (int i = 0; i < 4; i++) {
-        // Ensure each field is valid
+        
         if (!fields[i]) {
             g_critical("Field %d is NULL.", i);
             all_filled = 0;
             continue;
         }
 
-        // Retrieve the error label
+        
         GtkWidget *error_label = g_object_get_data(G_OBJECT(fields[i]), "error_label");
         if (!error_label || !GTK_IS_LABEL(error_label)) {
             g_critical("Error label for field %d is invalid or not set.", i);
@@ -86,7 +86,7 @@ static void on_continue_clicked(GtkWidget *widget, gpointer user_data) {
             continue;
         }
 
-        if (i == 0) { // Validate ComboBox
+        if (i == 0) { 
             if (!GTK_IS_COMBO_BOX(fields[i])) {
                 g_critical("Field %d is not a GtkComboBox.", i);
                 all_filled = 0;
@@ -100,7 +100,7 @@ static void on_continue_clicked(GtkWidget *widget, gpointer user_data) {
             } else {
                 gtk_widget_hide(error_label);
             }
-        } else { // Validate Entry
+        } else { 
             if (!GTK_IS_ENTRY(fields[i])) {
                 g_critical("Field %d is not a GtkEntry.", i);
                 all_filled = 0;
@@ -118,10 +118,10 @@ static void on_continue_clicked(GtkWidget *widget, gpointer user_data) {
         }
     }
 
-    // Check final validation status
+    
     if (all_filled) {
         g_print("All fields are filled. Proceeding...\n");
-        // Proceed to the next step
+        
     } else {
         g_warning("Validation failed. Check fields and error labels.");
     }
@@ -130,7 +130,7 @@ static void on_continue_clicked(GtkWidget *widget, gpointer user_data) {
 GtkWidget *create_cardinfo_screen() {
     GtkWidget *overlay = gtk_overlay_new();
 
-    // Background rendering
+    
     GtkWidget *drawing_area = gtk_drawing_area_new();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), drawing_area);
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_draw_event), NULL);
@@ -138,7 +138,7 @@ GtkWidget *create_cardinfo_screen() {
     GtkWidget *main_box = gtk_fixed_new();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), main_box);
 
-    // Fields and Labels
+    
     const char *labels[] = {"Bank Name", "Card Number", "Cardholder Name", "Expiry Date"};
     GtkWidget *fields[4];
 
@@ -186,7 +186,7 @@ for (int i = 0; i < 4; i++) {
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(fields[i]), banks[j]);
             }
 
-            // Apply custom CSS to the combo box
+            
             apply_css(fields[i],
                       "combobox, combobox text {"
                       "  background-color: white;"
@@ -198,10 +198,10 @@ for (int i = 0; i < 4; i++) {
                       "  border-radius: 8px;"
                       "}");
         } else {
-        // Other fields - Entry
+        
         fields[i] = gtk_entry_new();
 
-        // Set placeholders
+        
         if (i == 1) {
             gtk_entry_set_placeholder_text(GTK_ENTRY(fields[i]), "196318201901");
         } else if (i == 2) {
@@ -211,11 +211,11 @@ for (int i = 0; i < 4; i++) {
         }
     }
 
-    // Set size and add to layout
+    
     gtk_widget_set_size_request(fields[i], 400, 40);
     gtk_fixed_put(GTK_FIXED(main_box), fields[i], base_x + 230, base_y + i * 100 + 60);
 
-    // Apply styles for fields
+    
     apply_css(fields[i],
               "entry {"
               "  border: 1px solid #223A60;"
@@ -247,7 +247,7 @@ gtk_widget_set_size_request(continue_button, 180, 50);
 gtk_fixed_put(GTK_FIXED(main_box), cancel_button, base_x + 180, base_y + 450);
 gtk_fixed_put(GTK_FIXED(main_box), continue_button, base_x + 380, base_y + 450);
 
-// Apply custom CSS to the buttons
+
 apply_css(cancel_button,
           "button {"
           "  background-color: #223A60;"

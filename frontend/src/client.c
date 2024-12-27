@@ -2,6 +2,7 @@
 #include "./homepage/homepage.h"
 #include "./server_com/server_com.h"
 #include "./register/register.h"
+// #include "./cardinfo/cardinfo.h"
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdio.h>
