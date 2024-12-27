@@ -170,7 +170,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         for (size_t i = 0; i < ticket_counts; ++i) {
             double ticket_x = (screen_width - ticket_width) / 2;
             double print_button_x = ticket_x + ticket_width - 350;
-            double print_button_y = 111 + i * (ticket_height + 30) + 100;
+            double print_button_y = 111 + i * (ticket_height + 30) + 100; 
 
             
             if (event->x >= print_button_x && event->x <= print_button_x + button_width &&
