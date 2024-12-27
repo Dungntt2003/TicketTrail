@@ -90,6 +90,7 @@ char* returnMsg (char* message){
 
 void *handle_client(void *client_socket) {
     bool is_logged_in = false;
+    int user_id = 0;
     int option=10;
     char int_str[12];
     char email[BUFFER_SIZE];
@@ -147,8 +148,11 @@ void *handle_client(void *client_socket) {
                 if (!checkEmailExist(email)){
                     send(sock, "EMAIL_NOT_FOUND", strlen("EMAIL_NOT_FOUND") + 1, 0);
                 }else {
-                    if (login_user(email, password)){
-                        send(sock, "SUCCESS", strlen("SUCCESS") + 1, 0);
+                    if (login_user(email, password, &user_id)){
+                        printf("Check user id: %d\n", user_id);
+                        char msg_with_id[256];
+                        snprintf(msg_with_id, sizeof(msg_with_id), "SUCCESS:%d", user_id);
+                        send(sock, msg_with_id, strlen(msg_with_id) + 1, 0);  
                         is_logged_in = true;
                     }
                     else send(sock, "FAILED", strlen("FAILED") + 1, 0);
@@ -219,9 +223,14 @@ void *handle_client(void *client_socket) {
                 }
                 printf("Number tickets: %d\n", count_ticket);
                 send(sock, &count_ticket, sizeof(count_ticket), 0);
-                format_tickets_to_string(tickets, count_ticket, buffer);
-                printf("Send to client: %s\n", buffer);
-                send(sock, buffer, strlen(buffer), 0);
+                if (count_ticket == 0){
+                    send(sock, "NO TICKETS", strlen("NO TICKETS") + 1, 0);
+                }
+                else {
+                    format_tickets_to_string(tickets, count_ticket, buffer);
+                    printf("Send to client: %s\n", buffer);
+                    send(sock, buffer, strlen(buffer), 0);
+                }
             }
         }
     }

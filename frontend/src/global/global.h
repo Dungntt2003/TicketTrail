@@ -50,6 +50,7 @@ extern int seat_count;
 extern char **seats_array;
 extern int number_seat_order;
 extern int price;
+extern int user_id;
 extern int final_price;
 extern char class[30];
 extern char **temp_seats;
@@ -72,4 +73,5 @@ char *join_strings(char **array, int size, const char *delimiter);
 int time_to_seconds(const char *time);
 void seconds_to_time(int total_seconds, char *time_str);
 char *calculate_end_time(const char *start_time, int duration);
+int is_valid_date(const char *date_str);
 #endif 

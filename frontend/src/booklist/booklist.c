@@ -6,11 +6,10 @@
 #include "../global/global.h"
 
 
+char date[20];
+char time_flight[20];
 static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ticket_width, double ticket_height, const Ticket *ticket) {
-    printf("Check time, date\n");
-    char date[20];
-    char time[20];
-    split_date_time(ticket->departure_time, date, time);
+    split_date_time(ticket->departure_time, date, time_flight);
     cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
     cairo_new_path(cr);
     cairo_arc(cr, ticket_x + 24, ticket_y + 24, 24, M_PI, 3 * M_PI / 2);
@@ -37,11 +36,11 @@ static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ti
 
     
     cairo_move_to(cr, departure_city_x, departure_city_y);
-    cairo_show_text(cr,ticket->departure_airport);
+    cairo_show_text(cr,extract_middle_string(ticket->departure_airport));
 
     
     cairo_move_to(cr, arrival_city_x, arrival_city_y);
-    cairo_show_text(cr, ticket->arrival_airport);
+    cairo_show_text(cr, extract_middle_string(ticket->arrival_airport));
 
     
     double departure_airport_y = departure_city_y + 30;
@@ -52,10 +51,10 @@ static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ti
     cairo_set_font_size(cr, 18);
 
     cairo_move_to(cr, departure_city_x, departure_airport_y);
-    cairo_show_text(cr, ticket->departure_airport);
+    cairo_show_text(cr, extract_middle_string(ticket->departure_airport));
 
     cairo_move_to(cr, arrival_city_x, arrival_airport_y);
-    cairo_show_text(cr, ticket->arrival_airport);
+    cairo_show_text(cr, extract_middle_string(ticket->arrival_airport));
 
     
     GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../assets/images/flight-icon.png", NULL);
@@ -100,9 +99,16 @@ static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ti
     cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 18);
     cairo_move_to(cr, date_time_start_x + 230, current_y + 15);
-    cairo_show_text(cr, time);
+    cairo_show_text(cr, time_flight);
 
-    printf("Check array button\n");    
+    if (ticket->list_ticket[0] == '1'){
+        strcpy(class, "First class");
+    }
+    else if (ticket->list_ticket[0] == '2'){
+        strcpy(class, "Business");
+    }
+    else strcpy(class, "Economy");
+
     const char *flight_labels[4] = {"Flight", "Gate", "Seat", "Class"};
     const char *flight_info[4] = {ticket->flight_id, "22", ticket->list_ticket, class};
 
@@ -164,7 +170,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         for (size_t i = 0; i < ticket_counts; ++i) {
             double ticket_x = (screen_width - ticket_width) / 2;
             double print_button_x = ticket_x + ticket_width - 350;
-            double print_button_y = 111 + i * (ticket_height + 30) + ticket_height + 20; 
+            double print_button_y = 111 + i * (ticket_height + 30) + 100;
 
             
             if (event->x >= print_button_x && event->x <= print_button_x + button_width &&
@@ -227,6 +233,16 @@ static gboolean on_booklist_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         g_object_unref(bg_pixbuf);
     }
 
+    if (ticket_count == 0){
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_set_font_size(cr, 20);
+        cairo_move_to(cr, 50, 100);
+        cairo_show_text(cr, "You do not have any tickets");
+
+        return FALSE;
+    }
+
     Ticket *tickets = (Ticket *)user_data; 
     size_t ticket_counts = ticket_count;
 
@@ -273,54 +289,57 @@ static gboolean on_booklist_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
                       print_button_y + (button_height + print_text_extents.height) / 2);
         cairo_show_text(cr, "Print ticket out");
 
+        // if (is_valid_date(date) == 0) {
+            
+            double cancel_button_y = print_button_y + button_height + 20;
+            double cancel_button_x = button_x;
+
+            cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
+            cairo_new_path(cr);
+            cairo_arc(cr, cancel_button_x + 8, cancel_button_y + 8, 8, M_PI, 3 * M_PI / 2);
+            cairo_arc(cr, cancel_button_x + cancel_change_width - 8, cancel_button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
+            cairo_arc(cr, cancel_button_x + cancel_change_width - 8, cancel_button_y + button_height - 8, 8, 0, M_PI / 2);
+            cairo_arc(cr, cancel_button_x + 8, cancel_button_y + button_height - 8, 8, M_PI / 2, M_PI);
+            cairo_close_path(cr);
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
+            cairo_stroke(cr);
+
+            
+            cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);
+            cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+            cairo_set_font_size(cr, 18);
+            cairo_text_extents_t cancel_text_extents;
+            cairo_text_extents(cr, "Cancel", &cancel_text_extents);
+            cairo_move_to(cr, cancel_button_x + (cancel_change_width - cancel_text_extents.width) / 2,
+                        cancel_button_y + (button_height + cancel_text_extents.height) / 2);
+            cairo_show_text(cr, "Cancel");
+
+            
+            double change_button_x = cancel_button_x + cancel_change_width + button_gap;
+
+            cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
+            cairo_new_path(cr);
+            cairo_arc(cr, change_button_x + 8, cancel_button_y + 8, 8, M_PI, 3 * M_PI / 2);
+            cairo_arc(cr, change_button_x + cancel_change_width - 8, cancel_button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
+            cairo_arc(cr, change_button_x + cancel_change_width - 8, cancel_button_y + button_height - 8, 8, 0, M_PI / 2);
+            cairo_arc(cr, change_button_x + 8, cancel_button_y + button_height - 8, 8, M_PI / 2, M_PI);
+            cairo_close_path(cr);
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
+            cairo_stroke(cr);
+
+            
+            cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);
+            cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+            cairo_set_font_size(cr, 18);
+            cairo_text_extents_t change_text_extents;
+            cairo_text_extents(cr, "Change", &change_text_extents);
+            cairo_move_to(cr, change_button_x + (cancel_change_width - change_text_extents.width) / 2,
+                        cancel_button_y + (button_height + change_text_extents.height) / 2);
+            cairo_show_text(cr, "Change");
+        // }
         
-        double cancel_button_y = print_button_y + button_height + 20;
-        double cancel_button_x = button_x;
-
-        cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
-        cairo_new_path(cr);
-        cairo_arc(cr, cancel_button_x + 8, cancel_button_y + 8, 8, M_PI, 3 * M_PI / 2);
-        cairo_arc(cr, cancel_button_x + cancel_change_width - 8, cancel_button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
-        cairo_arc(cr, cancel_button_x + cancel_change_width - 8, cancel_button_y + button_height - 8, 8, 0, M_PI / 2);
-        cairo_arc(cr, cancel_button_x + 8, cancel_button_y + button_height - 8, 8, M_PI / 2, M_PI);
-        cairo_close_path(cr);
-        cairo_fill_preserve(cr);
-        cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
-        cairo_stroke(cr);
-
-        
-        cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);
-        cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 18);
-        cairo_text_extents_t cancel_text_extents;
-        cairo_text_extents(cr, "Cancel", &cancel_text_extents);
-        cairo_move_to(cr, cancel_button_x + (cancel_change_width - cancel_text_extents.width) / 2,
-                      cancel_button_y + (button_height + cancel_text_extents.height) / 2);
-        cairo_show_text(cr, "Cancel");
-
-        
-        double change_button_x = cancel_button_x + cancel_change_width + button_gap;
-
-        cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
-        cairo_new_path(cr);
-        cairo_arc(cr, change_button_x + 8, cancel_button_y + 8, 8, M_PI, 3 * M_PI / 2);
-        cairo_arc(cr, change_button_x + cancel_change_width - 8, cancel_button_y + 8, 8, 3 * M_PI / 2, 2 * M_PI);
-        cairo_arc(cr, change_button_x + cancel_change_width - 8, cancel_button_y + button_height - 8, 8, 0, M_PI / 2);
-        cairo_arc(cr, change_button_x + 8, cancel_button_y + button_height - 8, 8, M_PI / 2, M_PI);
-        cairo_close_path(cr);
-        cairo_fill_preserve(cr);
-        cairo_set_source_rgb(cr, 0.13, 0.23, 0.37); 
-        cairo_stroke(cr);
-
-        
-        cairo_set_source_rgb(cr, 0.13, 0.23, 0.37);
-        cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 18);
-        cairo_text_extents_t change_text_extents;
-        cairo_text_extents(cr, "Change", &change_text_extents);
-        cairo_move_to(cr, change_button_x + (cancel_change_width - change_text_extents.width) / 2,
-                      cancel_button_y + (button_height + change_text_extents.height) / 2);
-        cairo_show_text(cr, "Change");
     }
 
     return FALSE;

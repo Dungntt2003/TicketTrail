@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <stdbool.h>
 #include <ctype.h>
 GtkWidget *entry_email, *entry_password, *label_status;
@@ -19,6 +20,7 @@ Ticket list_tickets[MAX_LENGTH];
 int ticket_count;
 int seat_count;
 char **seats_array;
+int user_id;
 int price = 0;
 int number_seat_order;
 int final_price;
@@ -350,4 +352,32 @@ char *calculate_end_time(const char *start_time, int duration) {
     seconds_to_time(end_seconds, end_time);
 
     return end_time;
+}
+
+
+int is_valid_date(const char *date_str) {
+    struct tm tm;
+    time_t now;
+    time(&now);  
+    struct tm *current_time = localtime(&now);
+
+    
+    if (strptime(date_str, "%Y-%m-%d", &tm) == NULL) {
+        return 0;  
+    }
+
+    
+    if (tm.tm_year > current_time->tm_year) {
+        return 0;  
+    } else if (tm.tm_year == current_time->tm_year) {
+        if (tm.tm_mon > current_time->tm_mon) {
+            return 0;  
+        } else if (tm.tm_mon == current_time->tm_mon) {
+            if (tm.tm_mday > current_time->tm_mday) {
+                return 0;  
+            }
+        }
+    }
+
+    return 1;  
 }

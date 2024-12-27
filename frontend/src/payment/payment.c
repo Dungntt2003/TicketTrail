@@ -110,7 +110,6 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
         event->y >= button_y_payment && event->y <= button_y_payment + 56) {
         printf("Confirm button clicked!\n");
-         int user_id = 3;
         snprintf(buffer, MAX_LENGTH, "GET LIST TICKETS: %d", user_id);
         send(sock, buffer, strlen(buffer), 0);
         printf("Message sent: %s\n", buffer);
@@ -127,6 +126,11 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         }
         buffer[bytes_received] = '\0';
         g_print("Receive from server: %s\n", buffer);
+        if (strcmp(buffer, "NO TICKETS") == 0) {
+            GtkWidget *book_list_window =  create_booklist_window();
+            set_content(book_list_window);
+            return true;
+        }
         int ticket_count_temp = parse_buffer_to_tickets(buffer, list_tickets);
         g_print("Number of tickets: %d\n", ticket_count_temp);
         for (int i = 0; i < ticket_count_temp; i++){

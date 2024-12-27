@@ -92,7 +92,7 @@ bool register_user(const char *email, const char *name, const char *phone, const
     return true;
 }
 
-bool login_user(const char *email, const char *password) {
+bool login_user(const char *email, const char *password, int *user_id) {
     char hashed_password[65];
     hash_password_func(password, hashed_password);
     if (fetch_users(&user, &countUser) != 0){
@@ -101,6 +101,7 @@ bool login_user(const char *email, const char *password) {
     }
     for (int i = 0; i < countUser; i++){
         if (strcmp(user[i].email, email) == 0 && strcmp(user[i].password, hashed_password) == 0){
+            *user_id = user[i].user_id;
             printf("Login successfully\n");
             return true;
         }

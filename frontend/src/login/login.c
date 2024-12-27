@@ -27,7 +27,9 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
     g_print("Sent to server: %s\n", buffer);
     recv(sock, buffer, sizeof(buffer), 0);
     g_print("Received from server: %s\n", buffer);
-    if (strcmp(buffer, "SUCCESS") == 0){
+    if (strncmp(buffer, "SUCCESS:", 8) == 0){
+        sscanf(buffer + 8, "%d", &user_id);
+        printf("User ID: %d\n", user_id);
         GtkWidget *homepage_widget = create_homepage_window();
         set_content(homepage_widget);
     }
