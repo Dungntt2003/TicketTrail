@@ -128,7 +128,7 @@ GtkWidget* create_list_window() {
 
     // Tạo header
     GtkWidget *buttons[4];
-    header = create_header(buttons);
+    header = create_header(buttons, main_box);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
 
     // Tạo hộp lọc
@@ -141,5 +141,3 @@ GtkWidget* create_list_window() {
 
     return main_box;
 }
-
-

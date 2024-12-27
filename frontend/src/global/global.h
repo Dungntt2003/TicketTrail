@@ -21,6 +21,19 @@ typedef struct {
     int available_first_class;
 } Flight;
 
+typedef struct {
+    char flight_id[MAX_LENGTH];
+    char departure_airport[MAX_LENGTH];
+    char arrival_airport[MAX_LENGTH];
+    char departure_time[MAX_LENGTH];
+    int duration_minutes;
+    char airplane_name[MAX_LENGTH];
+    int total_price;
+    char list_ticket[MAX_LENGTH];
+    int booking_id;
+} Ticket;
+
+
 extern GtkWidget *entry_email, *entry_password, *label_status;
 extern char buffer[MAX_LENGTH];
 extern int sock;
@@ -41,6 +54,8 @@ extern int final_price;
 extern char class[30];
 extern char **temp_seats;
 extern int tem_seats_size;
+extern Ticket list_tickets[MAX_LENGTH];
+extern int ticket_count;
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
 int is_number(const char *str);

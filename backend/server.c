@@ -7,15 +7,39 @@
 #include <pthread.h>
 #include "./auth/auth.h"
 #include "./flight/flight.h"
+#include "./ticket/ticket.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 char *token;
 Flight *flights = NULL;
+Ticket *tickets = NULL;
+int count_ticket = 0;
 int count_flight = 0;
 int seat_count = 0;
+int user_id = 0;
 char **seats;
 char seat_code[10]; 
+
+
+void format_tickets_to_string(Ticket *tickets, int count_ticket, char *output_buffer) {
+    output_buffer[0] = '\0'; 
+    int BUFFER_SIZE_MAX = 4096;
+    for (int i = 0; i < count_ticket; i++) {
+        char line[BUFFER_SIZE_MAX];
+        snprintf(line, BUFFER_SIZE_MAX, "%d\n%s\n%s\n%d\n%s\n%s\n%s\n%d\n%s\n",
+                 tickets[i].booking_id,
+                 tickets[i].flight_id,
+                 tickets[i].departure_time,
+                 tickets[i].duration_minutes,
+                 tickets[i].airplane_name,
+                 tickets[i].departure_airport,
+                 tickets[i].arrival_airport,
+                 tickets[i].total_price,
+                 tickets[i].list_ticket);
+        strncat(output_buffer, line, BUFFER_SIZE_MAX - strlen(output_buffer) - 1);
+    }
+}
 void send_flights(int client_sock, Flight *flights, int count) {
     char buffer[65536]; 
     int offset = 0;  
@@ -187,6 +211,17 @@ void *handle_client(void *client_socket) {
                 } else {
                     printf("Invalid format\n");
                 }
+            }
+            else if (sscanf(buffer, "GET LIST TICKETS: %d", &user_id) == 1) {
+                printf("User id received: %d\n", user_id);
+                if (fetch_tickets(&tickets, &count_ticket, user_id) != 0) {
+                    fprintf(stderr, "Failed to fetch tickets.\n");
+                }
+                printf("Number tickets: %d\n", count_ticket);
+                send(sock, &count_ticket, sizeof(count_ticket), 0);
+                format_tickets_to_string(tickets, count_ticket, buffer);
+                printf("Send to client: %s\n", buffer);
+                send(sock, buffer, strlen(buffer), 0);
             }
         }
     }
