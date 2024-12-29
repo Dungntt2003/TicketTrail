@@ -6,8 +6,57 @@
 #include "../global/global.h"
 
 
+typedef struct {         
+    Ticket *tickets;
+    int *ticket_count;
+    int index;
+} ConfirmParams;
+
 char date[20];
 char time_flight[20];
+
+static void show_confirmation_dialog(GtkWidget *parent, const char *message, void (*confirm_action)(void *), void *data) {
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(gtk_widget_get_toplevel(parent)),
+                                               GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                               GTK_MESSAGE_QUESTION,
+                                               GTK_BUTTONS_NONE,
+                                               "%s", message);
+
+    GtkWidget *yes_button = gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", GTK_RESPONSE_YES);
+    GtkWidget *no_button = gtk_dialog_add_button(GTK_DIALOG(dialog), "No", GTK_RESPONSE_NO);
+
+    g_signal_connect_swapped(yes_button, "clicked", G_CALLBACK(confirm_action), data);
+    g_signal_connect_swapped(no_button, "clicked", G_CALLBACK(gtk_widget_destroy), dialog);
+
+    gtk_widget_show_all(dialog);
+}
+
+static void on_cancel_confirm(GtkWidget *widget, gpointer user_data) {
+    ConfirmParams *params = (ConfirmParams *)user_data;
+    Ticket *tickets = params->tickets;
+    int *ticket_count = params->ticket_count;
+    int index = params->index;
+
+    
+    for (int i = index; i < (*ticket_count) - 1; i++) {
+        tickets[i] = tickets[i + 1];
+    }
+    (*ticket_count)--;
+
+    
+    GtkWidget *parent_window = gtk_widget_get_toplevel(widget);
+    gtk_widget_queue_draw(parent_window);
+
+    g_free(params);
+}
+
+static void on_change_confirm(GtkWidget *widget, gpointer user_data) {
+    ConfirmParams *params = (ConfirmParams *)user_data;
+    g_print("Redirecting to homepage for ticket %d...\n", params->index);
+
+    g_free(params);
+}
+
 static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ticket_width, double ticket_height, const Ticket *ticket) {
     split_date_time(ticket->departure_time, date, time_flight);
     cairo_set_source_rgb(cr, 0.92, 0.94, 0.94); 
@@ -153,72 +202,86 @@ static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ti
     }
 }
 
+static void save_ticket_as_pdf(const char *filename, const Ticket *ticket) {
+    double ticket_width = 1000, ticket_height = 280;
+
+    cairo_surface_t *pdf_surface = cairo_pdf_surface_create(filename, ticket_width, ticket_height);
+    cairo_t *pdf_cr = cairo_create(pdf_surface);
+
+    draw_ticket(pdf_cr, 0, 0, ticket_width, ticket_height, ticket);
+
+    cairo_destroy(pdf_cr);
+    cairo_surface_destroy(pdf_surface);
+}
 
 static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
     if (event->type == GDK_BUTTON_PRESS) {
-        Ticket *tickets = (Ticket *)user_data; 
-        size_t ticket_counts = ticket_count;
-
-        double button_width = 320;
-        double button_height = 50;
+        Ticket *tickets = (Ticket *)user_data;
+        int ticket_counts = ticket_count;
 
         gint screen_width = gtk_widget_get_allocated_width(widget);
-        double ticket_width = 1000;
-        double ticket_height = 280;
+        double ticket_width = 1000, ticket_height = 280;
 
-        
-        for (size_t i = 0; i < ticket_counts; ++i) {
+        for (int i = 0; i < ticket_counts; ++i) {
             double ticket_x = (screen_width - ticket_width) / 2;
-            double print_button_x = ticket_x + ticket_width - 350;
-            double print_button_y = 111 + i * (ticket_height + 30) + 100; 
 
             
-            if (event->x >= print_button_x && event->x <= print_button_x + button_width &&
-                event->y >= print_button_y && event->y <= print_button_y + button_height) {
+            double print_button_x = ticket_x + ticket_width - 350;
+            double print_button_y = 200 + i * (ticket_height + 50);
 
-                
-                GtkWidget *dialog = gtk_file_chooser_dialog_new(
+            if (event->x >= print_button_x && event->x <= print_button_x + 320 &&
+                event->y >= print_button_y && event->y <= print_button_y + 50) {
+                    GtkWidget *dialog = gtk_file_chooser_dialog_new(
                     "Save Ticket",
-                    NULL,
+                    GTK_WINDOW(gtk_widget_get_toplevel(widget)),
                     GTK_FILE_CHOOSER_ACTION_SAVE,
                     "_Cancel", GTK_RESPONSE_CANCEL,
                     "_Save", GTK_RESPONSE_ACCEPT,
-                    NULL
-                );
+                    NULL);
 
-                gtk_window_set_default_size(GTK_WINDOW(dialog), 1000, 800);
-                gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-
-                
                 gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "Your_Flight_Ticket.pdf");
 
-                
                 if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
                     char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-
-                    
-                    cairo_surface_t *pdf_surface = cairo_pdf_surface_create(filename, ticket_width, ticket_height);
-                    cairo_t *pdf_cr = cairo_create(pdf_surface);
-
-                    
-                    draw_ticket(pdf_cr, 0, 0, ticket_width, ticket_height, &tickets[i]);
-
-                    
-                    cairo_destroy(pdf_cr);
-                    cairo_surface_destroy(pdf_surface);
-
-                    g_print("Ticket saved as '%s'.\n", filename);
+                    save_ticket_as_pdf(filename, &tickets[i]);
+                    g_print("Ticket saved as: %s\n", filename);
                     g_free(filename);
                 }
 
                 gtk_widget_destroy(dialog);
-                return TRUE; 
+                return TRUE;
+            }
+            double cancel_button_x = ticket_x + ticket_width - 350;
+            double cancel_button_y = print_button_y + 70;
+
+            if (event->x >= cancel_button_x && event->x <= cancel_button_x + 150 &&
+                event->y >= cancel_button_y && event->y <= cancel_button_y + 50) {
+                ConfirmParams *params = g_new(ConfirmParams, 1); 
+                params->tickets = tickets;
+                params->ticket_count = &ticket_count;
+                params->index = i;
+
+                show_confirmation_dialog(widget, "Are you sure you want to cancel?", (void (*)(void *))on_cancel_confirm, params);
+                return TRUE;
+            }
+
+             double change_button_x = ticket_x + ticket_width - 200;
+            double change_button_y = cancel_button_y;
+
+            if (event->x >= change_button_x && event->x <= change_button_x + 150 &&
+                event->y >= change_button_y && event->y <= change_button_y + 50) {
+                ConfirmParams *params = g_malloc(sizeof(ConfirmParams));
+                params->tickets = tickets;
+                params->ticket_count = &ticket_count;
+                params->index = i;
+
+                show_confirmation_dialog(widget, "Are you sure you want to change?", (void (*)(void *))on_change_confirm, params);
+                return TRUE;
             }
         }
     }
-    return FALSE; 
+    return FALSE;
 }
-
 static gboolean on_booklist_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
     gint screen_width = gtk_widget_get_allocated_width(widget);
     gint screen_height = gtk_widget_get_allocated_height(widget);
