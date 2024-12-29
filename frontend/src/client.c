@@ -1,29 +1,18 @@
-#include "./global/global.h"
-#include "./homepage/homepage.h"
-#include "./server_com/server_com.h"
-#include "./register/register.h"
-// #include "./cardinfo/cardinfo.h"
 #include <gtk/gtk.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#define PORT 8080
-#define BUFFER_SIZE 1024
-#define SERVER_IP "127.0.0.1"
+#include "booklist/booklist.h"
 
 int main(int argc, char *argv[]) {
-  sock = connect_to_server(SERVER_IP, PORT);
-  gtk_init(&argc, &argv);
-  GtkWidget *main_window = create_main_window();
-  gtk_widget_show_all(main_window);
+    gtk_init(&argc, &argv);
 
-  GtkWidget *register_window = create_register_window();
-  set_content(register_window);
-  gtk_main();
-  close(sock);
-  return 0;
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Booklist");
+    gtk_window_fullscreen(GTK_WINDOW(window));
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    GtkWidget *booklist_screen = create_booklist_window();
+    gtk_container_add(GTK_CONTAINER(window), booklist_screen);
+
+    gtk_widget_show_all(window);
+    gtk_main();
+    return 0;
 }
