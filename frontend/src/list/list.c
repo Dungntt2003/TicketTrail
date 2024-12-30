@@ -11,6 +11,36 @@
 GtkWidget *ticket_list; // Danh sách vé
 GtkWidget *main_box;    // Main box
 GtkWidget *list_window;
+int selected_day_index = 0; // Chỉ số ngày được chọn
+
+const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+const int num_days = 7;
+
+// Hàm xử lý khi người dùng chọn một ngày
+void on_day_button_click(GtkWidget *widget, gpointer data) {
+    selected_day_index = GPOINTER_TO_INT(data);
+    g_print("Selected day: %s\n", days[selected_day_index]);
+
+    // Làm mới danh sách vé dựa trên ngày được chọn (nếu có điều kiện lọc theo ngày)
+    refresh_ticket_list(ticket_list);
+}
+
+// Hàm tạo thanh chọn ngày
+GtkWidget* create_day_selector() {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+
+    for (int i = 0; i < num_days; i++) {
+        GtkWidget *day_button = gtk_button_new_with_label(days[i]);
+        gtk_widget_set_name(day_button, "day_button");
+
+        // Kết nối tín hiệu click với xử lý chọn ngày
+        g_signal_connect(day_button, "clicked", G_CALLBACK(on_day_button_click), GINT_TO_POINTER(i));
+
+        gtk_box_pack_start(GTK_BOX(box), day_button, TRUE, TRUE, 5);
+    }
+
+    return box;
+}
 
 // Link 
 void on_detail_link_click(GtkWidget *widget, gpointer data) {
@@ -30,6 +60,9 @@ void on_detail_link_click(GtkWidget *widget, gpointer data) {
 GtkWidget* create_ticket_list() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     for (int i = 0; i < tem_flight_count; i++) {
+         if (tem_flights[i].departure_time != selected_day_index) {
+            continue;
+        }
         GtkWidget *ticket_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         
         GtkWidget *airline_label = gtk_label_new(tem_flights[i].airplane_name);
@@ -158,6 +191,11 @@ GtkWidget* create_list_window() {
     GtkWidget *buttons[4];
     header = create_header(buttons, main_box);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
+
+     // Tạo thanh chọn ngày
+    day_selector = create_day_selector();
+    gtk_box_pack_start(GTK_BOX(main_box), day_selector, FALSE, FALSE, 0);
+
 
     // Tạo hộp lọc
     filter_box = create_filter_box();
