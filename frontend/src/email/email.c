@@ -94,12 +94,10 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data
 GtkWidget *create_email_screen() {
     GtkWidget *overlay = gtk_overlay_new();
 
-    // Vẽ nền
     GtkWidget *drawing_area = gtk_drawing_area_new();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), drawing_area);
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_draw_event), NULL);
 
-    // Thêm nút Email
     GtkWidget *button = gtk_button_new_with_label("Email");
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button);
     gtk_widget_set_size_request(button, 150, 50);
