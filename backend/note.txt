@@ -4,3 +4,6 @@ sudo apt update
 sudo apt install libssl-dev
 sudo apt-get install libmysqlclient-dev
 //.*$
+
+gcc main.c -o main -lssl -lcrypto -lcurl
+sudo apt-get install libssl-dev libcurl4-openssl-dev

@@ -86,4 +86,6 @@ char *calculate_end_time(const char *start_time, int duration);
 int is_valid_date(const char *date_str);
 int get_list_tickets_ordered ();
 int filter_announces_by_tickets(Announce *announces, int announce_count, Ticket *tickets, int ticket_count, Announce *filtered_announces);
+void vnpay_payment();
+void receive_result_from_vnpay();
 #endif 

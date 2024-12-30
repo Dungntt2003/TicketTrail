@@ -5,6 +5,16 @@
 #include <time.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+#include <curl/curl.h>
+#include <signal.h>
+#include <microhttpd.h>
+#include "../booklist/booklist.h"
+
+#define PORT 8888
+#define RUNTIME_SECONDS 900 
+
 GtkWidget *entry_email, *entry_password, *label_status;
 char buffer[MAX_LENGTH];
 int sock;
@@ -430,4 +440,230 @@ int filter_announces_by_tickets(Announce *announces, int announce_count, Ticket 
     }
 
     return filtered_count;
+}
+
+
+void url_encode(const char *src, char *dest, size_t dest_len) {
+    size_t i, j = 0;
+    for (i = 0; src[i] != '\0' && j < dest_len - 1; i++) {
+        if (isalnum((unsigned char)src[i]) || src[i] == '-' || src[i] == '_' || src[i] == '.' || src[i] == '~') {
+            dest[j++] = src[i];
+        } else {
+            if (j + 3 >= dest_len) break;
+            snprintf(&dest[j], 4, "%%%02X", (unsigned char)src[i]);
+            j += 3;
+        }
+    }
+    dest[j] = '\0';
+}
+
+char *hmac_sha512(const char *key, const char *data) {
+    unsigned char *result;
+    unsigned int len = 64;  // HMAC-SHA512 trả về 64 byte
+    result = (unsigned char *)malloc(len);
+    HMAC(EVP_sha512(), key, strlen(key), (unsigned char *)data, strlen(data), result, &len);
+
+    char *hex_result = (char *)malloc(len * 2 + 1);
+    for (unsigned int i = 0; i < len; i++) {
+        sprintf(hex_result + (i * 2), "%02x", result[i]);
+    }
+    hex_result[len * 2] = '\0';
+    free(result);
+    return hex_result;
+}
+
+
+char* generate_random_number(size_t length) {
+    char *output = malloc(length + 1);
+    if (!output) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    srand((unsigned) time(NULL));
+    for (size_t i = 0; i < length; i++) {
+        output[i] = '0' + (rand() % 10); 
+    }
+    output[length] = '\0';
+    return output;
+}
+
+
+char* convert_to_string_amount(int number_money) {
+    char *output = malloc(50); 
+    if (!output) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    snprintf(output, 50, "%d", number_money); 
+    return output;
+}
+
+
+char* get_current_timeV2() {
+    char *output = malloc(15); 
+    if (!output) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+    snprintf(output, 15, "%04d%02d%02d%02d%02d%02d",
+             t->tm_year + 1900,  
+             t->tm_mon + 1,      
+             t->tm_mday,         
+             t->tm_hour,          
+             t->tm_min,           
+             t->tm_sec);          
+
+    return output;
+}
+
+void open_browser(const char *url) {
+    char command[2048];
+
+    // Clear the command buffer before use
+    memset(command, 0, sizeof(command));
+
+#ifdef _WIN32
+    snprintf(command, sizeof(command), "start %s", url); 
+#elif __APPLE__
+    snprintf(command, sizeof(command), "open %s", url);  
+#else
+    snprintf(command, sizeof(command), "xdg-open \"%s\"", url);  
+    printf("Check command: %s\n", command);
+#endif
+
+    // Execute the command
+    int ret = system(command);
+    if (ret != 0) {
+        printf("Failed to open URL. Error code: %d\n", ret);
+    }
+}
+
+
+void vnpay_payment() {
+
+    const char *vnp_TmnCode = "MZHS6NEZ";
+    const char *vnp_HashSecret = "OLMEGIFJE0ODTO3SZ0PETBRGUFW2H3FW";
+    const char *vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+
+    char *vnp_TxnRef = generate_random_number(2);
+    char *vnp_Amount = convert_to_string_amount(final_price * 100); 
+    char *vnp_CreateDate = get_current_timeV2(); 
+    const char *vnp_CurrCode = "VND";
+    const char *vnp_IpAddr = "127.0.0.1";
+    const char *vnp_Locale = "vn";
+    const char *vnp_OrderInfo = "Thanhtoan";
+    const char *vnp_OrderType = "other";
+    const char *vnp_ReturnUrl = "http://localhost:8888/vnpay_return";
+    const char *vnp_BankCode = "NCB";
+
+    char encoded_OrderInfo[512];
+    char encoded_ReturnUrl[512];
+    url_encode(vnp_OrderInfo, encoded_OrderInfo, sizeof(encoded_OrderInfo));
+    url_encode(vnp_ReturnUrl, encoded_ReturnUrl, sizeof(encoded_ReturnUrl));
+
+    char params[2048];
+    snprintf(params, sizeof(params),
+        "vnp_Amount=%s&vnp_BankCode=%s&vnp_Command=pay&vnp_CreateDate=%s&vnp_CurrCode=%s"
+        "&vnp_IpAddr=%s&vnp_Locale=%s&vnp_OrderInfo=%s&vnp_OrderType=%s&vnp_ReturnUrl=%s&vnp_TmnCode=%s"
+        "&vnp_TxnRef=%s&vnp_Version=2.1.0",
+        vnp_Amount, vnp_BankCode, vnp_CreateDate, vnp_CurrCode, vnp_IpAddr, vnp_Locale,
+        encoded_OrderInfo, vnp_OrderType, encoded_ReturnUrl, vnp_TmnCode, vnp_TxnRef);
+
+    char *secure_hash = hmac_sha512(vnp_HashSecret, params);
+    char payment_url[4096];
+    snprintf(payment_url, sizeof(payment_url), "%s?%s&vnp_SecureHash=%s", vnp_Url, params, secure_hash);
+
+    printf("Payment URL: %s\n", payment_url);
+    open_browser(payment_url);
+    free(secure_hash);
+    free(vnp_TxnRef);
+    free(vnp_Amount);
+    free(vnp_CreateDate);
+}
+
+
+volatile sig_atomic_t stop_server = 0;
+
+void handle_signal(int signal) {
+    stop_server = 1;
+}
+
+int iterate_querystring(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
+    int *condition_met = (int *)cls; 
+    if (key && value) {
+        printf("Key: %s, Value: %s\n", key, value);
+        if (strcmp(key, "vnp_ResponseCode") == 0 && strcmp(value, "00") == 0) {
+            printf("Condition met: vnp_ResponseCode == 00\n");
+            *condition_met = 1; 
+            int result = get_list_tickets_ordered();
+            if (result == -1){
+                printf("Error when fetching tickets\n");
+                return false;
+            }
+            GtkWidget *book_list_window =  create_booklist_window();
+            set_content(book_list_window);
+        }
+    }
+    return MHD_YES; 
+}
+
+int handle_request(void *cls, struct MHD_Connection *connection, 
+                   const char *url, const char *method, const char *version, 
+                   const char *upload_data, size_t *upload_data_size, void **con_cls) {
+    if (strcmp(method, "GET") != 0) {
+        return MHD_NO; 
+    }
+
+    printf("URL: %s\n", url);
+
+    int condition_met = 0; 
+    MHD_get_connection_values(connection, MHD_GET_ARGUMENT_KIND, &iterate_querystring, &condition_met);
+
+    const char *response;
+    if (condition_met) {
+        printf("Stopping server due to condition met: vnp_ResponseCode == 00\n");
+        response = "Please return to your app to continue"; 
+        stop_server = 1; 
+    } else {
+        response = "Please return to your app to continue";
+    }
+
+    struct MHD_Response *http_response = MHD_create_response_from_buffer(strlen(response), (void *)response, MHD_RESPMEM_PERSISTENT);
+    int ret = MHD_queue_response(connection, MHD_HTTP_OK, http_response);
+    MHD_destroy_response(http_response);
+
+    return ret;
+}
+
+void receive_result_from_vnpay(){
+    struct MHD_Daemon *daemon;
+
+    signal(SIGINT, handle_signal);
+
+    daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, PORT, NULL, NULL, &handle_request, NULL, MHD_OPTION_END);
+    if (NULL == daemon) {
+        fprintf(stderr, "Failed to start HTTP server.\n");
+        return;
+    }
+
+    printf("HTTP server running on port %d...\n", PORT);
+
+    time_t start_time = time(NULL); 
+
+    while (!stop_server) {
+        if (time(NULL) - start_time >= RUNTIME_SECONDS) { 
+            printf("Server ran for %d seconds. Stopping...\n", RUNTIME_SECONDS);
+            break;
+        }
+        sleep(1); 
+    }
+
+    MHD_stop_daemon(daemon);
+    printf("HTTP server stopped.\n");
 }
