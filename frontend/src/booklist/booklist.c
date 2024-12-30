@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <math.h>
 #include "../global/global.h"
+#include "../component/component.h"
 
 
 typedef struct {         
@@ -412,13 +413,22 @@ GtkWidget *create_booklist_window() {
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 
+    GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), main_box);
+
+    GtkWidget *buttons[4];
+    GtkWidget *header = create_header(buttons, scrolled_window);
+    gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
+
     GtkWidget *drawing_area = gtk_drawing_area_new();
     gtk_widget_add_events(drawing_area, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_booklist_draw), list_tickets);
     g_signal_connect(drawing_area, "button-press-event", G_CALLBACK(on_button_press), list_tickets);
 
-    gtk_widget_set_size_request(drawing_area, -1, 3 * (280 + 50 + 50)); 
-    gtk_container_add(GTK_CONTAINER(scrolled_window), drawing_area);
+    gtk_widget_set_size_request(drawing_area, -1, 3 * (280 + 50 + 50));
+
+    gtk_box_pack_start(GTK_BOX(main_box), drawing_area, TRUE, TRUE, 0);
 
     return scrolled_window;
+
 }

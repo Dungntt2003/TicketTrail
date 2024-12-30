@@ -30,6 +30,9 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
     if (strncmp(buffer, "SUCCESS:", 8) == 0){
         sscanf(buffer + 8, "%d", &user_id);
         printf("User ID: %d\n", user_id);
+        // if (get_list_tickets_ordered() == -1){
+        //     printf("Get tickets ordered fail\n");
+        // }
         GtkWidget *homepage_widget = create_homepage_window();
         set_content(homepage_widget);
     }

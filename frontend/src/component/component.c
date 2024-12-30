@@ -5,6 +5,7 @@
 #include "../global/global.h"
 #include "../homepage/homepage.h"
 #include "../server_com/server_com.h"
+#include "../booklist/booklist.h"
 void on_home_button_clicked(GtkWidget *widget, gpointer data) {
     if (widget == NULL) {
         g_print("Error: widget is NULL\n");
@@ -13,6 +14,20 @@ void on_home_button_clicked(GtkWidget *widget, gpointer data) {
     g_print("Home button clicked!\n");
     GtkWidget *homepage_widget = create_homepage_window();
     set_content(homepage_widget);
+}
+
+void show_list_tickets(GtkWidget **widget, gpointer data){
+     if (widget == NULL) {
+        g_print("Error: widget is NULL\n");
+        return;
+    }
+    g_print("List tickets button clicked!\n");
+    if (get_list_tickets_ordered() == -1){
+        printf("Get list tickets error\n");
+        return;
+    }
+    GtkWidget *book_list_window =  create_booklist_window();
+    set_content(book_list_window);
 }
 
 static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
@@ -31,7 +46,7 @@ static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
         }
     }
 }
-void get_notifications_data(const char ***messages, const char ***dates, int *count) {
+void get_notifications_data() {
     send(sock, "GET ANNOUNCES", strlen("GET ANNOUNCES"), 0);
     recv(sock, &announce_count, sizeof(announce_count), 0);
     printf("Number of announces: %d\n", announce_count);
@@ -50,18 +65,6 @@ void get_notifications_data(const char ***messages, const char ***dates, int *co
     for (int i = 0; i < announce_count; i++){
         printf("ID of announces: %d\n", list_announces[i].announce_id);
     }
-    static const char *msgs[] = {
-        "Vietjet Air xin thông báo delay chuyến bay từ HN đến HCM vào 17:00 xuống 21:00",
-        "Vietnam Airlines xin thông báo delay chuyến bay từ HCM đến Đà Nẵng vào 14:30 xuống 15:30"
-    };
-    static const char *dates_array[] = {
-        "17/12/2024",
-        "17/12/2024"
-    };
-
-    *messages = msgs;
-    *dates = dates_array;
-    *count = 2;
 }
 
 void show_notification(GtkWidget *widget, gpointer data) {
@@ -72,40 +75,33 @@ void show_notification(GtkWidget *widget, gpointer data) {
     else {
         printf("Noti log\n");
     }
-    const char **messages;
-    const char **dates;
-    int count;
-    get_notifications_data(&messages, &dates, &count);
-
-    
+    get_notifications_data();
+    filtered_announce_count = filter_announces_by_tickets(list_announces, announce_count, list_tickets, ticket_count, filtered_announces);
     GtkWidget *popover = gtk_popover_new(GTK_WIDGET(data));
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     
-    
-    for (int i = 0; i < count; i++) {
-        
-        GtkWidget *message_label = gtk_label_new(messages[i]);
-        gtk_box_pack_start(GTK_BOX(box), message_label, FALSE, FALSE, 0);
-          gtk_widget_set_halign(message_label, GTK_ALIGN_START); 
-        
-        
-        GtkWidget *date_label = gtk_label_new(dates[i]);
-        gtk_box_pack_start(GTK_BOX(box), date_label, FALSE, FALSE, 0);
-         gtk_widget_set_halign(date_label, GTK_ALIGN_START); 
+    if (filtered_announce_count == 0) {
+        GtkWidget *no_announcement_label = gtk_label_new("No announcement");
+        gtk_widget_set_halign(no_announcement_label, GTK_ALIGN_CENTER); // Căn giữa
+        gtk_box_pack_start(GTK_BOX(box), no_announcement_label, FALSE, FALSE, 0);
+    } else {
+        for (int i = 0; i < filtered_announce_count; i++) {
+            GtkWidget *message_label = gtk_label_new(filtered_announces[i].content);
+            gtk_box_pack_start(GTK_BOX(box), message_label, FALSE, FALSE, 0);
+            gtk_widget_set_halign(message_label, GTK_ALIGN_START); 
+            
+            GtkWidget *date_label = gtk_label_new(filtered_announces[i].updated_at);
+            gtk_box_pack_start(GTK_BOX(box), date_label, FALSE, FALSE, 0);
+            gtk_widget_set_halign(date_label, GTK_ALIGN_START); 
 
-         
-        GdkRGBA color;
-        gdk_rgba_parse(&color, "#A9A9A9"); 
-        gtk_widget_override_color(date_label, GTK_STATE_FLAG_NORMAL, &color);
+            GdkRGBA color;
+            gdk_rgba_parse(&color, "#A9A9A9"); 
+            gtk_widget_override_color(date_label, GTK_STATE_FLAG_NORMAL, &color);
+        }
     }
 
-    
     gtk_container_add(GTK_CONTAINER(popover), box);
-
-    
     gtk_widget_show_all(popover);
-
-    
     gtk_popover_set_relative_to(GTK_POPOVER(popover), widget);
     gtk_popover_popup(GTK_POPOVER(popover));
 }
@@ -200,9 +196,10 @@ GtkWidget* create_header(GtkWidget **buttons, GtkWidget *parent_container) {
 
     
     g_signal_connect(home_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
-    g_signal_connect(ticket_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
+    // g_signal_connect(ticket_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     g_signal_connect(account_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
     // g_signal_connect(notification_button, "toggled", G_CALLBACK(on_button_toggled), buttons);
+    g_signal_connect(ticket_button, "clicked",G_CALLBACK(show_list_tickets), NULL);
     g_signal_connect(notification_button, "clicked",G_CALLBACK(show_notification), NULL);
     g_signal_connect(home_button, "clicked", G_CALLBACK(on_home_button_clicked), NULL);
 

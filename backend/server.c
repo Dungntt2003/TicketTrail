@@ -177,6 +177,7 @@ void *handle_client(void *client_socket) {
             }
         }
         else {
+            memset(buffer, 0, BUFFER_SIZE);
             recv(sock, buffer, sizeof(buffer), 0);
             buffer[strcspn(buffer, "\n")] = 0;
             if (strncmp(buffer, "GET FLIGHTS", strlen("GET FLIGHTS")) == 0){

@@ -110,32 +110,16 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
         event->y >= button_y_payment && event->y <= button_y_payment + 56) {
         printf("Confirm button clicked!\n");
-        snprintf(buffer, MAX_LENGTH, "GET LIST TICKETS: %d", user_id);
-        send(sock, buffer, strlen(buffer), 0);
-        printf("Message sent: %s\n", buffer);
-         if (recv(sock, &ticket_count, sizeof(ticket_count), 0) <= 0) {
-            perror("Failed to receive count_ticket");
+        int result = get_list_tickets_ordered();
+        if (result == -1){
+            printf("Error when fetching tickets\n");
             return false;
         }
-
-        printf("Number of tickets: %d\n", ticket_count);
-        int bytes_received = recv(sock, buffer, MAX_LENGTH - 1, 0);
-        if (bytes_received <= 0) {
-            perror("Failed to receive tickets data");
-            return FALSE;
-        }
-        buffer[bytes_received] = '\0';
-        g_print("Receive from server: %s\n", buffer);
-        if (strcmp(buffer, "NO TICKETS") == 0) {
+        else if (result == 0){
+            printf("No tickets found\n");
             GtkWidget *book_list_window =  create_booklist_window();
             set_content(book_list_window);
-            return true;
-        }
-        int ticket_count_temp = parse_buffer_to_tickets(buffer, list_tickets);
-        g_print("Number of tickets: %d\n", ticket_count_temp);
-        for (int i = 0; i < ticket_count_temp; i++){
-            printf("Booking id: %d\n", list_tickets[i].booking_id);
-            printf("Flight id: %s\n", list_tickets[i].flight_id);
+            return false;
         }
         printf("Click navigate to list tickets\n");
         GtkWidget *book_list_window =  create_booklist_window();

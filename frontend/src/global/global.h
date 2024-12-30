@@ -64,6 +64,8 @@ extern int tem_seats_size;
 extern Ticket list_tickets[MAX_LENGTH];
 extern Announce list_announces[MAX_LENGTH];
 extern int announce_count;
+extern Announce filtered_announces[MAX_LENGTH];
+extern int filtered_announce_count; 
 extern int ticket_count;
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
@@ -82,4 +84,6 @@ int time_to_seconds(const char *time);
 void seconds_to_time(int total_seconds, char *time_str);
 char *calculate_end_time(const char *start_time, int duration);
 int is_valid_date(const char *date_str);
+int get_list_tickets_ordered ();
+int filter_announces_by_tickets(Announce *announces, int announce_count, Ticket *tickets, int ticket_count, Announce *filtered_announces);
 #endif 

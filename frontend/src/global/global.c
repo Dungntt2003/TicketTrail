@@ -18,6 +18,8 @@ int tem_flight_count;
 Flight detail_flight;
 Ticket list_tickets[MAX_LENGTH];
 Announce list_announces[MAX_LENGTH];
+Announce filtered_announces[MAX_LENGTH];
+int filtered_announce_count; 
 int announce_count;
 int ticket_count;
 int seat_count;
@@ -382,4 +384,50 @@ int is_valid_date(const char *date_str) {
     }
 
     return 1;  
+}
+
+
+int get_list_tickets_ordered () {
+     snprintf(buffer, MAX_LENGTH, "GET LIST TICKETS: %d", user_id);
+        send(sock, buffer, strlen(buffer), 0);
+        printf("Message sent: %s\n", buffer);
+         if (recv(sock, &ticket_count, sizeof(ticket_count), 0) <= 0) {
+            perror("Failed to receive count_ticket");
+            return -1;
+        }
+
+        printf("Number of tickets: %d\n", ticket_count);
+        int bytes_received = recv(sock, buffer, MAX_LENGTH - 1, 0);
+        if (bytes_received <= 0) {
+            perror("Failed to receive tickets data");
+            return -1;
+        }
+        buffer[bytes_received] = '\0';
+        g_print("Receive from server: %s\n", buffer);
+        if (strcmp(buffer, "NO TICKETS") == 0) {
+            return 0;
+        }
+        int ticket_count_temp = parse_buffer_to_tickets(buffer, list_tickets);
+        g_print("Number of tickets: %d\n", ticket_count_temp);
+        for (int i = 0; i < ticket_count_temp; i++){
+            printf("Booking id: %d\n", list_tickets[i].booking_id);
+            printf("Flight id: %s\n", list_tickets[i].flight_id);
+        }
+    return 1;
+}
+
+
+int filter_announces_by_tickets(Announce *announces, int announce_count, Ticket *tickets, int ticket_count, Announce *filtered_announces) {
+    int filtered_count = 0;
+
+    for (int i = 0; i < announce_count; i++) {
+        for (int j = 0; j < ticket_count; j++) {
+            if (strcmp(announces[i].flight_id, tickets[j].flight_id) == 0) {
+                filtered_announces[filtered_count++] = announces[i];
+                break; 
+            }
+        }
+    }
+
+    return filtered_count;
 }
