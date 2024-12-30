@@ -2,34 +2,26 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "../booking/booking.h"
-#include "../bookingDetail/detail.h"
+#include "../announce/announce.h"
 int main() {
-    time_t rawtime;
-    struct tm *timeinfo;
-    char booking_time[20];
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime(booking_time, sizeof(booking_time), "%Y-%m-%d %H:%M:%S", timeinfo);
-    int total_price = 1000000;
-    int user_id = 3;
-    const char *flight_id = "VN007";
-    int insert_id = 0;
+    Announce *announces = NULL;
+    int count = 0;
 
-    if (insert_booking(booking_time, total_price, user_id, flight_id, &insert_id) != 0) {
-        fprintf(stderr, "Failed to insert booking\n");
-        return EXIT_FAILURE;
+    int result = fetch_announces(&announces, &count);
+    if (result != 0) {
+        fprintf(stderr, "Failed to fetch announces. Error code: %d\n", result);
+        return 1;
     }
 
-    printf("Booking inserted successfully with ID: %d\n", insert_id);
-
-    const char *type = "Economy";
-    const char *seat_code = "5A";
-    if (insert_booking_detail(insert_id, type, seat_code) != 0) {
-        fprintf(stderr, "Failed to insert booking detail\n");
-        return EXIT_FAILURE;
+    printf("Fetched %d announces:\n", count);
+    for (int i = 0; i < count; i++) {
+        printf("Announce ID: %d\n", announces[i].announce_id);
+        printf("Flight ID: %s\n", announces[i].flight_id);
+        printf("Content: %s\n", announces[i].content);
+        printf("Updated At: %s\n", announces[i].updated_at);
+        printf("--------------------------------------\n");
     }
-    printf("Insert done\n");
+    free(announces);
 
-    return EXIT_SUCCESS;
+    return 0;
 }

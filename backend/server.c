@@ -244,7 +244,7 @@ int main() {
     int server_socket, client_socket, *new_sock;
     struct sockaddr_in server_addr, client_addr;
     socklen_t addr_size;
-    pthread_t thread_id;
+    pthread_t thread_id, notification_thread;
 
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) {

@@ -15,6 +15,8 @@
 #define BUFFER_SIZE 1024
 #define SERVER_IP "127.0.0.1"
 
+
+
 int main(int argc, char *argv[]) {
   sock = connect_to_server(SERVER_IP, PORT);
   gtk_init(&argc, &argv);

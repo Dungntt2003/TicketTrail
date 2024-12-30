@@ -5,13 +5,12 @@
 
 #define SMTP_SERVER "smtp://smtp.gmail.com"
 #define SMTP_PORT "587"
-#define SENDER_EMAIL ""      // Thay bằng email của bạn
-#define SENDER_PASSWORD ""         // Thay bằng App Password
+#define SENDER_EMAIL "nguyenthuydung55555@gmail.com"      // Thay bằng email của bạn
+#define SENDER_PASSWORD "gbtq lhad nhnt wqpx"         // Thay bằng App Password
 #define RECIPIENT_EMAIL "nguyenthuydung55555@gmail.com"          // Email người nhận
 #define EMAIL_SUBJECT "Chúc mừng đặt vé thành công"
 #define EMAIL_BODY "Congratulations on successfully booking your ticket!"
 
-// Hàm gửi email
 struct upload_status {
     size_t bytes_read;
 };
