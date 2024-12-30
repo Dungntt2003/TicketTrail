@@ -142,4 +142,21 @@ CREATE TABLE booking_details (
 -- insert into booking_details (booking_id, type, seat_code) values (3, 'Economy', '10A');
 
 
+Create table announces (
+	announce_id int primary key auto_increment,
+    flight_id varchar(255),
+    content text,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp,
+    foreign key (flight_id) references flights(flight_id)
+);
 
+INSERT INTO announces (flight_id, content) 
+VALUES 
+    ('VN001', 'Flight VN001 is ready for boarding.'),
+    ('VN002', 'Flight VN002 is delayed due to weather conditions.'),
+    ('VN003', 'Flight VN003 will depart in 30 minutes.'),
+    ('VN004', 'Flight VN004 is now boarding at gate A3.'),
+    ('VN005', 'Flight VN005 is delayed due to technical issues.'),
+    ('VN006', 'Flight VN006 has been canceled.'),
+    ('VN007', 'Flight VN007 is now boarding at gate B2.');
