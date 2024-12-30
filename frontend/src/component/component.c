@@ -4,6 +4,7 @@
 #include <pango/pangocairo.h>
 #include "../global/global.h"
 #include "../homepage/homepage.h"
+#include "../server_com/server_com.h"
 void on_home_button_clicked(GtkWidget *widget, gpointer data) {
     if (widget == NULL) {
         g_print("Error: widget is NULL\n");
@@ -31,6 +32,24 @@ static void on_button_toggled(GtkToggleButton *button, gpointer user_data) {
     }
 }
 void get_notifications_data(const char ***messages, const char ***dates, int *count) {
+    send(sock, "GET ANNOUNCES", strlen("GET ANNOUNCES"), 0);
+    recv(sock, &announce_count, sizeof(announce_count), 0);
+    printf("Number of announces: %d\n", announce_count);
+        int bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+            printf("Failed to receive announces data.\n");
+        }
+
+        buffer[bytes_received] = '\0';
+        printf("Received announces: %s\n", buffer);
+
+    printf("Before parsing\n");
+    parse_buffer_to_announces(buffer, list_announces);
+    printf("After parsing\n");
+
+    for (int i = 0; i < announce_count; i++){
+        printf("ID of announces: %d\n", list_announces[i].announce_id);
+    }
     static const char *msgs[] = {
         "Vietjet Air xin thông báo delay chuyến bay từ HN đến HCM vào 17:00 xuống 21:00",
         "Vietnam Airlines xin thông báo delay chuyến bay từ HCM đến Đà Nẵng vào 14:30 xuống 15:30"

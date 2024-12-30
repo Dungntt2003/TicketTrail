@@ -8,12 +8,15 @@
 #include "./auth/auth.h"
 #include "./flight/flight.h"
 #include "./ticket/ticket.h"
+#include "./announce/announce.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 char *token;
 Flight *flights = NULL;
 Ticket *tickets = NULL;
+Announce *announces = NULL;
+int count_announce = 0;
 int count_ticket = 0;
 int count_flight = 0;
 int seat_count = 0;
@@ -37,6 +40,20 @@ void format_tickets_to_string(Ticket *tickets, int count_ticket, char *output_bu
                  tickets[i].arrival_airport,
                  tickets[i].total_price,
                  tickets[i].list_ticket);
+        strncat(output_buffer, line, BUFFER_SIZE_MAX - strlen(output_buffer) - 1);
+    }
+}
+
+void send_announces(Announce *announces, int count_announce, char *output_buffer){
+    output_buffer[0] = '\0'; 
+    int BUFFER_SIZE_MAX = 4096;
+    for (int i = 0; i < count_announce; i++) {
+        char line[BUFFER_SIZE_MAX];
+        snprintf(line, BUFFER_SIZE_MAX, "%d\n%s\n%s\n%s\n",
+                 announces[i].announce_id,
+                 announces[i].flight_id,
+                 announces[i].content,
+                 announces[i].updated_at);
         strncat(output_buffer, line, BUFFER_SIZE_MAX - strlen(output_buffer) - 1);
     }
 }
@@ -229,6 +246,21 @@ void *handle_client(void *client_socket) {
                 else {
                     format_tickets_to_string(tickets, count_ticket, buffer);
                     printf("Send to client: %s\n", buffer);
+                    send(sock, buffer, strlen(buffer), 0);
+                }
+            }
+            else if (strncmp(buffer, "GET ANNOUNCES", strlen("GET ANNOUNCES")) == 0){
+                 if (fetch_announces(&announces, &count_announce) != 0) {
+                    fprintf(stderr, "Failed to fetch announces.\n");
+                }
+                printf("Number tickets: %d\n", count_announce);
+                send(sock, &count_announce, sizeof(count_announce), 0);
+                if (count_announce == 0){
+                    send(sock, "NO ANNOUNCES", strlen("NO ANNOUNCES") + 1, 0);
+                }
+                else {
+                    send_announces(announces, count_announce, buffer);
+                    printf("Send to client list of announces: %s\n", buffer);
                     send(sock, buffer, strlen(buffer), 0);
                 }
             }

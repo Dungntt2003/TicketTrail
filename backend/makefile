@@ -15,7 +15,7 @@ DETAIL_DIR = ./bookingDetail
 TEST_CONNECT_DIR = ./testConnect
 ANNOUNCE_DIR = ./announce
 
-SERVER_SRC = $(SRC_DIR)/server.c $(AUTH_DIR)/auth.c $(USER_DIR)/user.c $(DB_DIR)/db.c ${FLIGHT_DIR}/flight.c $(TICKET_DIR)/ticket.c
+SERVER_SRC = $(SRC_DIR)/server.c $(AUTH_DIR)/auth.c $(USER_DIR)/user.c $(DB_DIR)/db.c ${FLIGHT_DIR}/flight.c $(TICKET_DIR)/ticket.c $(ANNOUNCE_DIR)/announce.c
 CONNECT_SRC = $(TEST_CONNECT_DIR)/connect.c $(DB_DIR)/db.c $(ANNOUNCE_DIR)/announce.c
 
 BINS = server connect

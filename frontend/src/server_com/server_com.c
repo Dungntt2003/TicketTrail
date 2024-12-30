@@ -179,3 +179,37 @@ int parse_buffer_to_tickets(const char *buffer, Ticket *tickets) {
     free(buffer_copy); 
     return count;
 }
+
+
+void parse_buffer_to_announces(const char *buffer, Announce *announces) {
+    int current_count = 0;
+    char *buffer_copy = strdup(buffer); 
+    char *line, *saveptr;
+
+    line = strtok_r(buffer_copy, "\n", &saveptr);
+    while (line != NULL) {
+        Announce announce;
+
+        announce.announce_id = atoi(line);
+
+        line = strtok_r(NULL, "\n", &saveptr);
+        if (line == NULL) break;
+        strncpy(announce.flight_id, line, sizeof(announce.flight_id) - 1);
+        announce.flight_id[sizeof(announce.flight_id) - 1] = '\0';
+
+        line = strtok_r(NULL, "\n", &saveptr);
+        if (line == NULL) break;
+        strncpy(announce.content, line, sizeof(announce.content) - 1);
+        announce.content[sizeof(announce.content) - 1] = '\0';
+
+        line = strtok_r(NULL, "\n", &saveptr);
+        if (line == NULL) break;
+        strncpy(announce.updated_at, line, sizeof(announce.updated_at) - 1);
+        announce.updated_at[sizeof(announce.updated_at) - 1] = '\0';
+
+        announces[current_count++] = announce;
+        line = strtok_r(NULL, "\n", &saveptr);
+    }
+
+    free(buffer_copy); 
+}

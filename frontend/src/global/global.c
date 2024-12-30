@@ -17,6 +17,8 @@ Flight tem_flights[MAX_LENGTH];
 int tem_flight_count;
 Flight detail_flight;
 Ticket list_tickets[MAX_LENGTH];
+Announce list_announces[MAX_LENGTH];
+int announce_count;
 int ticket_count;
 int seat_count;
 char **seats_array;

@@ -33,6 +33,12 @@ typedef struct {
     int booking_id;
 } Ticket;
 
+typedef struct {
+    int announce_id;
+    char flight_id[MAX_LENGTH];
+    char content[MAX_LENGTH];
+    char updated_at[MAX_LENGTH];
+} Announce;
 
 extern GtkWidget *entry_email, *entry_password, *label_status;
 extern char buffer[MAX_LENGTH];
@@ -56,6 +62,8 @@ extern char class[30];
 extern char **temp_seats;
 extern int tem_seats_size;
 extern Ticket list_tickets[MAX_LENGTH];
+extern Announce list_announces[MAX_LENGTH];
+extern int announce_count;
 extern int ticket_count;
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
