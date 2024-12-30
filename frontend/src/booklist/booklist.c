@@ -16,47 +16,47 @@ typedef struct {
 char date[20];
 char time_flight[20];
 
-static void show_confirmation_dialog(GtkWidget *parent, const char *message, void (*confirm_action)(void *), void *data) {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(gtk_widget_get_toplevel(parent)),
-                                               GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                               GTK_MESSAGE_QUESTION,
-                                               GTK_BUTTONS_NONE,
-                                               "%s", message);
+static void show_contact_dialog(GtkWidget *parent) {
+    // Tạo một dialog
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(
+        "Contact Information", // Tiêu đề
+        GTK_WINDOW(gtk_widget_get_toplevel(parent)),
+        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        "_Close", GTK_RESPONSE_CLOSE,
+        NULL);
 
-    GtkWidget *yes_button = gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", GTK_RESPONSE_YES);
-    GtkWidget *no_button = gtk_dialog_add_button(GTK_DIALOG(dialog), "No", GTK_RESPONSE_NO);
+    // Tạo nội dung thông báo
+    const char *message = 
+        "For assistance, please contact our ticket support team:\n\n"
+        "📧 Email: TicketTrail@gmail.com\n"
+        "📞 Phone: +1-800-555-1234\n\n"
+        "We are available 24/7 to assist you with your queries. Thank you for choosing TicketTrail.";
 
-    g_signal_connect_swapped(yes_button, "clicked", G_CALLBACK(confirm_action), data);
-    g_signal_connect_swapped(no_button, "clicked", G_CALLBACK(gtk_widget_destroy), dialog);
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    GtkWidget *label = gtk_label_new(message);
 
+    // Cài đặt font chữ và căn chỉnh
+    PangoAttrList *attr_list = pango_attr_list_new();
+    PangoAttribute *font_attr = pango_attr_size_new_absolute(18 * PANGO_SCALE); // Font size 18px
+    pango_attr_list_insert(attr_list, font_attr);
+    gtk_label_set_attributes(GTK_LABEL(label), attr_list);
+    pango_attr_list_unref(attr_list);
+
+    gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+
+    // Thêm label vào dialog
+    gtk_box_pack_start(GTK_BOX(content_area), label, TRUE, TRUE, 10);
+
+    // Hiển thị các thành phần của dialog
     gtk_widget_show_all(dialog);
+
+    // Đóng dialog khi bấm nút Close
+    g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
 }
 
-static void on_cancel_confirm(GtkWidget *widget, gpointer user_data) {
-    ConfirmParams *params = (ConfirmParams *)user_data;
-    Ticket *tickets = params->tickets;
-    int *ticket_count = params->ticket_count;
-    int index = params->index;
+static void on_cancel(GtkWidget *widget, gpointer user_data);
 
-    
-    for (int i = index; i < (*ticket_count) - 1; i++) {
-        tickets[i] = tickets[i + 1];
-    }
-    (*ticket_count)--;
-
-    
-    GtkWidget *parent_window = gtk_widget_get_toplevel(widget);
-    gtk_widget_queue_draw(parent_window);
-
-    g_free(params);
-}
-
-static void on_change_confirm(GtkWidget *widget, gpointer user_data) {
-    ConfirmParams *params = (ConfirmParams *)user_data;
-    g_print("Redirecting to homepage for ticket %d...\n", params->index);
-
-    g_free(params);
-}
 
 static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ticket_width, double ticket_height, const Ticket *ticket) {
     split_date_time(ticket->departure_time, date, time_flight);
@@ -262,7 +262,9 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
                 params->ticket_count = &ticket_count;
                 params->index = i;
 
-                show_confirmation_dialog(widget, "Are you sure you want to cancel?", (void (*)(void *))on_cancel_confirm, params);
+                // Gọi trực tiếp hàm on_cancel
+                on_cancel(widget, params);
+
                 return TRUE;
             }
 
@@ -276,7 +278,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
                 params->ticket_count = &ticket_count;
                 params->index = i;
 
-                show_confirmation_dialog(widget, "Are you sure you want to change?", (void (*)(void *))on_change_confirm, params);
+                show_contact_dialog(widget);
                 return TRUE;
             }
         }
