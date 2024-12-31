@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <microhttpd.h>
 #include "../booklist/booklist.h"
+#include "../email/email.h"
 
 #define PORT 8888
 #define RUNTIME_SECONDS 900 
@@ -41,6 +42,7 @@ int final_price;
 char class[30];
 char **temp_seats = NULL;
 int tem_seats_size = 0;
+char email_user[50];
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",
@@ -459,7 +461,7 @@ void url_encode(const char *src, char *dest, size_t dest_len) {
 
 char *hmac_sha512(const char *key, const char *data) {
     unsigned char *result;
-    unsigned int len = 64;  // HMAC-SHA512 trả về 64 byte
+    unsigned int len = 64;
     result = (unsigned char *)malloc(len);
     HMAC(EVP_sha512(), key, strlen(key), (unsigned char *)data, strlen(data), result, &len);
 
@@ -605,6 +607,11 @@ int iterate_querystring(void *cls, enum MHD_ValueKind kind, const char *key, con
             if (result == -1){
                 printf("Error when fetching tickets\n");
                 return false;
+            }
+            if (send_email() == 0) {
+                g_print("Email sent successfully!\n");
+            } else {
+                g_print("Failed to send email.\n");
             }
             GtkWidget *book_list_window =  create_booklist_window();
             set_content(book_list_window);

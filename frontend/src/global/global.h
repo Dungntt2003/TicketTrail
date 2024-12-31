@@ -67,6 +67,7 @@ extern int announce_count;
 extern Announce filtered_announces[MAX_LENGTH];
 extern int filtered_announce_count; 
 extern int ticket_count;
+extern char email_user[50];
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
 int is_number(const char *str);
