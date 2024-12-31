@@ -53,8 +53,25 @@ static void show_contact_dialog(GtkWidget *parent) {
     g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
 }
 
-static void on_cancel(GtkWidget *widget, gpointer user_data){
-    printf("Cancel button clicked");
+static gboolean execute_on_main_thread(gpointer user_data) {
+    on_cancel(NULL, user_data);
+    return FALSE; 
+}
+
+void on_cancel(GtkWidget *widget, gpointer user_data){
+    g_print("Cancel button clicked");
+
+     if (widget == NULL) {
+        g_print("Widget is NULL\n");
+    } else {
+        g_print("Widget is valid\n");
+    }
+
+    if (user_data == NULL) {
+        g_print("User data is NULL\n");
+    } else {
+        g_print("User data is valid\n");
+    }
 }
 
 
@@ -263,7 +280,8 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
                 params->index = i;
 
                 // Gọi trực tiếp hàm on_cancel
-                on_cancel(widget, params);
+                g_print("Cancel button area clicked!\n");
+                g_idle_add(execute_on_main_thread, params);
 
                 return TRUE;
             }
