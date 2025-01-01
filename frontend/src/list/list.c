@@ -59,21 +59,42 @@ void on_detail_link_click(GtkWidget *widget, gpointer data) {
 // Hàm tạo nội dung vé
 GtkWidget* create_ticket_list() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
     for (int i = 0; i < tem_flight_count; i++) {
-         if (tem_flights[i].departure_time != selected_day_index) {
-            continue;
+        // Tách ngày từ departure_time
+        char departure_date[11]; // Lưu trữ ngày (YYYY-MM-DD)
+        char departure_time[9]; // Lưu trữ giờ (HH:MM:SS)
+        split_date_time(tem_flights[i].departure_time, departure_date, departure_time);
+
+        // Kiểm tra xem ngày có khớp với ngày được chọn hay không
+        if (selected_day_index != 0) { // Nếu có chỉ số ngày
+            struct tm date_tm;
+            memset(&date_tm, 0, sizeof(struct tm));
+            strptime(departure_date, "%Y-%m-%d", &date_tm);
+
+            // Lấy ngày hiện tại để tính toán
+            time_t now = time(NULL);
+            struct tm *current_date = localtime(&now);
+
+            // Tính toán số ngày chênh lệch
+            int day_difference = date_tm.tm_mday - current_date->tm_mday;
+
+            // Kiểm tra nếu ngày nằm trong khoảng 0 - 2 ngày tới
+            if (day_difference < 0 || day_difference > 2) {
+                continue;
+            }
         }
+
         GtkWidget *ticket_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         
         GtkWidget *airline_label = gtk_label_new(tem_flights[i].airplane_name);
-        GtkWidget *departure_time_label = gtk_label_new(tem_flights[i].departure_time);
+        GtkWidget *departure_time_label = gtk_label_new(departure_date); // Hiển thị ngày
         GtkWidget *arrival_time_label = gtk_label_new(extract_middle_string(tem_flights[i].departure_airport));
         GtkWidget *class_label = gtk_label_new(extract_middle_string(tem_flights[i].arrival_airport));
         GtkWidget *price_label = gtk_label_new(format_number_with_separator(tem_flights[i].price, ','));
         char duration_text[16];
         snprintf(duration_text, sizeof(duration_text), "%d", tem_flights[i].duration_minutes);
         GtkWidget *duration_label = gtk_label_new(duration_text);
-
 
         GtkWidget *check_button = gtk_button_new_with_label("Check");
         gtk_widget_set_name(check_button, "check_button");
