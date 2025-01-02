@@ -42,7 +42,6 @@ GtkWidget* create_day_selector() {
     return box;
 }
 
-
 void on_detail_link_click(GtkWidget *widget, gpointer data) {
     char *flight_id = (char *)data;
     g_print("Check id: %s\n", flight_id);
@@ -121,7 +120,6 @@ void refresh_ticket_list(GtkWidget *container) {
     gtk_widget_show_all(container); 
 }
 
-
 void sort_flights(gboolean ascending) {
     for (int i = 0; i < tem_flight_count; i++) {
         for (int j = i + 1; j < tem_flight_count; j++) {
@@ -134,7 +132,6 @@ void sort_flights(gboolean ascending) {
         }
     }
 }
-
 
 void sort_flights_by_duration(gboolean ascending) {
     for (int i = 0; i < tem_flight_count; i++) {
