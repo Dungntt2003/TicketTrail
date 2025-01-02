@@ -175,14 +175,14 @@ double seat_width = 30, seat_height = 30;
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 100);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 610, (screen_height - 588) / 2 + 100);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
      
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 640, (screen_height - 588) / 2 + 115);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 610, (screen_height - 588) / 2 + 115);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
      
