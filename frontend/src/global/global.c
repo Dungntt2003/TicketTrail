@@ -43,6 +43,9 @@ char class[30];
 char **temp_seats = NULL;
 int tem_seats_size = 0;
 char email_user[50];
+char date_tem_flight[50];
+char airport_from[50];
+char airport_to[50];
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",
@@ -673,4 +676,48 @@ void receive_result_from_vnpay(){
 
     MHD_stop_daemon(daemon);
     printf("HTTP server stopped.\n");
+}
+
+
+void generate_next_5_days(const char *input_date, char **days, int *num_days) {
+    g_print("Check date %s\n", input_date);
+    struct tm date = {0};
+    if (strptime(input_date, "%Y-%m-%d", &date) == NULL) {
+        fprintf(stderr, "Invalid date format. Expected yyyy-mm-dd\n");
+        exit(EXIT_FAILURE);
+    }
+
+    *num_days = 5;
+
+    date.tm_mday -= 2;
+    mktime(&date);
+
+    for (int i = 0; i < *num_days; i++) {
+        days[i] = malloc(11);
+        if (days[i] == NULL) {
+            perror("Memory allocation failed");
+            exit(EXIT_FAILURE);
+        }
+        strftime(days[i], 11, "%Y-%m-%d", &date);
+
+        date.tm_mday += 1;
+        mktime(&date);
+    }
+}
+
+
+char* convert_minutes_to_time_format(int total_minutes) {
+
+    int hours = total_minutes / 60;
+    int minutes = total_minutes % 60;
+
+    char *time_str = malloc(10); 
+    if (time_str == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    snprintf(time_str, 10, "%dh%dm", hours, minutes);
+
+    return time_str; 
 }

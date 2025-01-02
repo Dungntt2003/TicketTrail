@@ -56,6 +56,11 @@ void on_list_link_click(GtkWidget *widget, gpointer data) {
     g_list_free(children1);
 
     g_print("%s %s %s %s %s %s\n", from, to, traveller, selected_class, date_text, date_return_text);
+    strcpy(date_tem_flight, date_text);
+    strcpy(airport_from, from);
+    strcpy(airport_to, to);
+    strcpy(class, selected_class);
+    number_seat_order = atoi(traveller);
      
     if (strlen(from) == 0 || strlen(to) == 0 || strlen(selected_class) == 0 || strlen(date_text) == 0 || strlen(traveller) == 0){
         gtk_label_set_text(GTK_LABEL(label_status), "All fields are required!");

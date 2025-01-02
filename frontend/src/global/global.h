@@ -68,6 +68,9 @@ extern Announce filtered_announces[MAX_LENGTH];
 extern int filtered_announce_count; 
 extern int ticket_count;
 extern char email_user[50];
+extern char date_tem_flight[50];
+extern char airport_from[50];
+extern char airport_to[50];
 GtkWidget* create_main_window();
 void set_content(GtkWidget *new_content);
 int is_number(const char *str);
@@ -89,4 +92,6 @@ int get_list_tickets_ordered ();
 int filter_announces_by_tickets(Announce *announces, int announce_count, Ticket *tickets, int ticket_count, Announce *filtered_announces);
 void vnpay_payment();
 void receive_result_from_vnpay();
+void generate_next_5_days(const char *input_date, char **days, int *num_days);
+char* convert_minutes_to_time_format(int total_minutes);
 #endif 
