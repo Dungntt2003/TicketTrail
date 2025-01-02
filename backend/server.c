@@ -5,7 +5,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "./utils/utils.h"
 #include "./auth/auth.h"
+#include "./bookingDetail/detail.h"
 #include "./flight/flight.h"
 #include "./ticket/ticket.h"
 #include "./announce/announce.h"
@@ -22,6 +24,9 @@ int count_ticket = 0;
 int count_flight = 0;
 int seat_count = 0;
 int user_id = 0;
+int total_price = 0;
+char flight_id[BUFFER_SIZE];
+char seat_list[BUFFER_SIZE];
 int booking_id = 0;
 char **seats;
 char seat_code[10]; 
@@ -267,15 +272,50 @@ void *handle_client(void *client_socket) {
                     send(sock, buffer, strlen(buffer), 0);
                 }
             }
-            else if (sscanf(buffer, "DELETE BOOKING: %d", &booking_id) == 1) {
-                printf("Booking id received: %d\n", booking_id);
-                int result = delete_booking(booking_id);
-                if (result == 0) {
-                    send(sock, "SUCCESS", strlen("SUCCESS")  + 1, 0);
-                } else {
-                    send(sock, "FAILED", strlen("FAILED") + 1, 0);
+            else if (strncmp(buffer, "DELETE BOOKING", strlen("DELETE BOOKING")) == 0){
+                    if (sscanf(buffer, "DELETE BOOKING: %d", &booking_id) == 1) {
+                        printf("Booking id received: %d\n", booking_id);
+                        int result = delete_booking(booking_id);
+                        if (result == 0) {
+                            send(sock, "SUCCESS", strlen("SUCCESS")  + 1, 0);
+                        } else {
+                            send(sock, "FAILED", strlen("FAILED") + 1, 0);
+                        }
                 }
             }
+             else if (strncmp(buffer, "CREATE NEW BOOKING", strlen("CREATE NEW BOOKING")) == 0){
+                if (sscanf(buffer, "CREATE NEW BOOKING %d %d %s", &total_price, &user_id, flight_id) == 3) {
+                    printf("Parsed data: total_price=%d, user_id=%d, flight_id=%s\n", total_price, user_id, flight_id);
+                    int result = insert_booking(get_current_time_now(), total_price, user_id, flight_id, &booking_id);
+                     if (result == 0) {
+                        snprintf(buffer, sizeof(buffer), "SUCCESS BOOKING_ID: %d", booking_id);
+                        send(sock, buffer, strlen(buffer), 0);
+                    } else {
+                        send(sock, "FAILED TO CREATE BOOKING", strlen("FAILED TO CREATE BOOKING"), 0);
+                    }
+                }
+             }
+             else if (strncmp(buffer, "CREATE DETAIL BOOKING", strlen("CREATE DETAIL BOOKING")) == 0){
+                  if (sscanf(buffer + 22, "%d %s", &booking_id, seat_list) == 2) {
+                    printf("Booking ID: %d\n", booking_id);
+                    printf("Seat List: %s\n", seat_list);
+                     char *seat = strtok(seat_list, ",");
+                    while (seat != NULL) {
+                        printf("Seat: %s\n", seat);
+
+                        if (insert_booking_detail(booking_id, get_seat_class(seat), seat) == 0) {
+                            printf("Inserted seat %s successfully.\n", seat);
+                        } else {
+                            printf("Failed to insert seat %s.\n", seat);
+                        }
+
+                        seat = strtok(NULL, ",");
+                    }
+
+                    send(sock, "SUCCESS", strlen("SUCCESS"), 0);
+                  }
+                  else send(sock, "FAILED TO PARSE BOOKING DETAILS", strlen("FAILED TO PARSE BOOKING DETAILS"), 0);
+             }
         }
     }
 

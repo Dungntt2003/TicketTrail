@@ -116,18 +116,10 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
         //     return false;
         // }
         final_price = discounted_price;
+
         vnpay_payment();
         receive_result_from_vnpay();
-        // else if (result == 0){
-        //     printf("No tickets found\n");
-        //     GtkWidget *book_list_window =  create_booklist_window();
-        //     set_content(book_list_window);
-        //     return false;
-        // }
-        // printf("Click navigate to list tickets\n");
-        // GtkWidget *book_list_window =  create_booklist_window();
-        // set_content(book_list_window);
-            return true;
+        return true;
         }
 
     if (error_message[0] &&

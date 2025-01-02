@@ -61,6 +61,7 @@ extern int final_price;
 extern char class[30];
 extern char **temp_seats;
 extern int tem_seats_size;
+extern int booking_id;
 extern Ticket list_tickets[MAX_LENGTH];
 extern Announce list_announces[MAX_LENGTH];
 extern int announce_count;

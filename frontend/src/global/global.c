@@ -46,6 +46,7 @@ char email_user[50];
 char date_tem_flight[50];
 char airport_from[50];
 char airport_to[50];
+int booking_id;
 const char *airports[] = {
        "SGN - Tân Sơn Nhất - Hồ Chí Minh",
         "HAN - Nội Bài - Hà Nội",
@@ -606,6 +607,36 @@ int iterate_querystring(void *cls, enum MHD_ValueKind kind, const char *key, con
         if (strcmp(key, "vnp_ResponseCode") == 0 && strcmp(value, "00") == 0) {
             printf("Condition met: vnp_ResponseCode == 00\n");
             *condition_met = 1; 
+
+            snprintf(buffer, sizeof(buffer), "CREATE NEW BOOKING %d %d %s", final_price, user_id, detail_flight.flight_id);
+
+            send(sock, buffer, strlen(buffer), 0);
+            int bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+            if (bytes_received > 0) {
+                buffer[bytes_received] = '\0'; 
+                printf("Response from server: %s\n", buffer);
+                if (strncmp(buffer, "SUCCESS BOOKING_ID:", 19) == 0) {
+                    if (sscanf(buffer + 19, "%d", &booking_id) == 1) {
+                        printf("Booking ID extracted: %d\n", booking_id);
+                        snprintf(buffer, sizeof(buffer), "CREATE DETAIL BOOKING %d %s", booking_id, join_strings(temp_seats, tem_seats_size, ","));
+
+                        send(sock, buffer, strlen(buffer), 0);
+                        int bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+                        if (bytes_received > 0) {
+                            buffer[bytes_received] = '\0'; 
+                            printf("Response from server: %s\n", buffer);
+                        } else {
+                            printf("Failed to receive response\n");
+                        }
+                    } else {
+                        printf("Failed to extract Booking ID.\n");
+                    }
+                }
+            } else {
+                printf("Failed to receive response\n");
+            }
+
+
             int result = get_list_tickets_ordered();
             if (result == -1){
                 printf("Error when fetching tickets\n");
