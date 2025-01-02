@@ -203,7 +203,7 @@ double seat_width = 30, seat_height = 30;
     GdkPixbuf *flight_icon = gdk_pixbuf_new_from_file("../assets/images/flight-icon.png", NULL);
     if (flight_icon) {
         GdkPixbuf *scaled_flight_icon = gdk_pixbuf_scale_simple(flight_icon, 59, 14, GDK_INTERP_BILINEAR);
-        gdk_cairo_set_source_pixbuf(cr, scaled_flight_icon, (screen_width - 936) / 2 + 660, (screen_height - 588) / 2 + 88);
+        gdk_cairo_set_source_pixbuf(cr, scaled_flight_icon, (screen_width - 936) / 2 + 710, (screen_height - 588) / 2 + 88);
         cairo_paint(cr);
         g_object_unref(scaled_flight_icon);
         g_object_unref(flight_icon);
@@ -338,7 +338,7 @@ cairo_stroke(cr);
     char price_text[32];
     snprintf(price_text, sizeof(price_text), "Price: %s VND", format_number_with_separator(price, ','));
 
-    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 570);  
+    cairo_move_to(cr, (screen_width - 936) / 2 + 650, (screen_height - 588) / 2 + 570);  
     cairo_show_text(cr, price_text);
 
     button_x = screen_width - 70 - button_width;
