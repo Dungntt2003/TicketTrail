@@ -151,7 +151,7 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); 
     cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 24);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 220, (screen_height - 588) / 2 + 160);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 200, (screen_height - 588) / 2 + 160);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
     
@@ -164,7 +164,7 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); 
     cairo_select_font_face(cr, "Inter", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 620, (screen_height - 588) / 2 + 160);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 160);
     cairo_set_font_size(cr, 24);
     cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
@@ -243,7 +243,7 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     cairo_stroke(cr); 
 
     
-    GdkPixbuf *calendar_icon = gdk_pixbuf_new_from_file("../assets/images/Calendar.png", NULL);
+    GdkPixbuf *calendar_icon = gdk_pixbuf_new_from_file("../assets/images/calendar.png", NULL);
     if (calendar_icon) {
         GdkPixbuf *scaled_calendar_icon = gdk_pixbuf_scale_simple(calendar_icon, 20, 20, GDK_INTERP_BILINEAR);
         gdk_cairo_set_source_pixbuf(cr, scaled_calendar_icon, date_x + 8, (screen_height - 588) / 2 + 300 + (46 - 20) / 2);
@@ -327,7 +327,7 @@ static gboolean on_ticket_detail_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     cairo_text_extents(cr, "Price", &price_text_extents); 
 
     
-    double price_x = (screen_width - 936) / 2 + (160 - price_text_extents.width) / 2 + 350;
+    double price_x = (screen_width - 936) / 2 + (160 - price_text_extents.width) / 2 + 300;
     double price_y = (screen_height - 588) / 2 + 430;
 
     

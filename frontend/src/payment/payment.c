@@ -320,10 +320,10 @@ const char *flight_info[4] = {detail_flight.flight_id, gate_code, join_strings(t
 
 
 int label_font_size = 18;
-int info_font_size = 20;
+int info_font_size = 18;
 
 
-double column_spacing = 100;
+double column_spacing = 110;
 
 
 double right_half_start_x = screen_width / 2; 
@@ -388,11 +388,11 @@ double flight_icon_x = right_half_center_x - 156 / 2;
 double city_spacing = 20; 
 
 
-double departure_city_x = flight_icon_x - city_spacing - departure_city_extents.width;
+double departure_city_x = flight_icon_x - city_spacing - departure_city_extents.width + 5;
 double departure_city_y = flight_icon_y;
 
 
-double arrival_city_x = flight_icon_x + 156 + city_spacing;
+double arrival_city_x = flight_icon_x + 156 + city_spacing -5;
 double arrival_city_y = flight_icon_y;
 
 

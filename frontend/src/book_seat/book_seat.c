@@ -182,18 +182,20 @@ double seat_width = 30, seat_height = 30;
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 580, (screen_height - 588) / 2 + 115);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 640, (screen_height - 588) / 2 + 115);
     cairo_show_text(cr, extract_middle_string(detail_flight.departure_airport));
 
      
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
-    cairo_move_to(cr, (screen_width - 936) / 2 + 730, (screen_height - 588) / 2 + 100);
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 770, (screen_height - 588) / 2 + 100);
     cairo_set_font_size(cr, 14);
     cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
      
     cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
-    cairo_move_to(cr, (screen_width - 936) / 2 + 720, (screen_height - 588) / 2 + 115);
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 770, (screen_height - 588) / 2 + 115);
     cairo_set_font_size(cr, 12);
     cairo_show_text(cr, extract_middle_string(detail_flight.arrival_airport));
 
@@ -245,12 +247,14 @@ cairo_stroke(cr);
 
      
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_move_to(cr, (screen_width - 936) / 2 + 970, (screen_height - 588) / 2 + 100);
     cairo_set_font_size(cr, 14);
     cairo_show_text(cr, date);
 
        
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);  
+    cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_move_to(cr, (screen_width - 936) / 2 + 940, (screen_height - 588) / 2 + 100);
     cairo_set_font_size(cr, 14);
     cairo_show_text(cr, "--");
@@ -276,7 +280,7 @@ cairo_stroke(cr);
     cairo_set_source_rgb(cr, 0.7, 0.5, 1.0); 
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 630, (screen_height - 588) / 2 + 330);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 650, (screen_height - 588) / 2 + 330);
     cairo_show_text(cr, "Economy Class");
 
       GdkPixbuf *business_logo = gdk_pixbuf_new_from_file("../assets/images/Business.png", NULL);
@@ -323,7 +327,7 @@ cairo_stroke(cr);
    cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);  
     cairo_select_font_face(cr, "Poppins", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 14);
-    cairo_move_to(cr, (screen_width - 936) / 2 + 600, (screen_height - 588) / 2 + 550);
+    cairo_move_to(cr, (screen_width - 936) / 2 + 650, (screen_height - 588) / 2 + 550);
     cairo_show_text(cr, "Seat number: ");
     cairo_show_text(cr, join_strings(temp_seats, tem_seats_size, ", ")); 
 
