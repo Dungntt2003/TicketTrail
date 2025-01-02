@@ -60,18 +60,15 @@ static gboolean execute_on_main_thread(gpointer user_data) {
 
 void on_cancel(GtkWidget *widget, gpointer user_data){
     g_print("Cancel button clicked");
+    ConfirmParams *params = (ConfirmParams *)user_data;
+    g_print("Booking check: %d\n", list_tickets[params->index].booking_id);
+    int booking_id = 10;
+    snprintf(buffer, sizeof(buffer), "DELETE BOOKING: %d", booking_id);
+    send(sock, buffer, strlen(buffer) + 1, 0); 
 
-     if (widget == NULL) {
-        g_print("Widget is NULL\n");
-    } else {
-        g_print("Widget is valid\n");
-    }
-
-    if (user_data == NULL) {
-        g_print("User data is NULL\n");
-    } else {
-        g_print("User data is valid\n");
-    }
+    memset(buffer, 0, sizeof(buffer));
+    recv(sock, buffer, sizeof(buffer), 0);
+    printf("Response from server: %s\n", buffer);
 }
 
 
