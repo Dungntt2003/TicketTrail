@@ -9,6 +9,7 @@
 #include "./flight/flight.h"
 #include "./ticket/ticket.h"
 #include "./announce/announce.h"
+#include "./booking/booking.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
@@ -21,6 +22,7 @@ int count_ticket = 0;
 int count_flight = 0;
 int seat_count = 0;
 int user_id = 0;
+int booking_id = 0;
 char **seats;
 char seat_code[10]; 
 
@@ -263,6 +265,15 @@ void *handle_client(void *client_socket) {
                     send_announces(announces, count_announce, buffer);
                     printf("Send to client list of announces: %s\n", buffer);
                     send(sock, buffer, strlen(buffer), 0);
+                }
+            }
+            else if (sscanf(buffer, "DELETE BOOKING: %d", &booking_id) == 1) {
+                printf("Booking id received: %d\n", booking_id);
+                int result = delete_booking(booking_id);
+                if (result == 0) {
+                    send(sock, "SUCCESS", strlen("SUCCESS")  + 1, 0);
+                } else {
+                    send(sock, "FAILED", strlen("FAILED") + 1, 0);
                 }
             }
         }

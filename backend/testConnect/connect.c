@@ -2,26 +2,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "../announce/announce.h"
+#include "../booking/booking.h"
 int main() {
-    Announce *announces = NULL;
-    int count = 0;
+    int booking_id;
+    printf("Enter the booking_id to delete: ");
+    scanf("%d", &booking_id);
 
-    int result = fetch_announces(&announces, &count);
-    if (result != 0) {
-        fprintf(stderr, "Failed to fetch announces. Error code: %d\n", result);
-        return 1;
+    int result = delete_booking(booking_id);
+
+    if (result == 0) {
+        printf("Booking with ID %d has been successfully deleted.\n", booking_id);
+    } else {
+        printf("Failed to delete booking with ID %d. Please check the booking ID or database.\n", booking_id);
     }
-
-    printf("Fetched %d announces:\n", count);
-    for (int i = 0; i < count; i++) {
-        printf("Announce ID: %d\n", announces[i].announce_id);
-        printf("Flight ID: %s\n", announces[i].flight_id);
-        printf("Content: %s\n", announces[i].content);
-        printf("Updated At: %s\n", announces[i].updated_at);
-        printf("--------------------------------------\n");
-    }
-    free(announces);
-
     return 0;
 }

@@ -21,7 +21,7 @@ void on_login_clicked(GtkWidget *widget, gpointer data) {
         gtk_label_set_text(GTK_LABEL(label_status), "Email is not valid!");
         return;
     }
-
+    strcpy(email_user, email);
     snprintf(buffer, MAX_LENGTH, "LOGIN %s:%s", email, password);
     send(sock, buffer, sizeof(buffer), 0);
     g_print("Sent to server: %s\n", buffer);

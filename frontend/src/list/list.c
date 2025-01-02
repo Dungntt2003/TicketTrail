@@ -7,33 +7,33 @@
 #include "../component/component.h"
 #include "../global/global.h"
 
-// Biến toàn cục
-GtkWidget *ticket_list; // Danh sách vé
-GtkWidget *main_box;    // Main box
+
+GtkWidget *ticket_list; 
+GtkWidget *main_box;    
 GtkWidget *list_window;
-int selected_day_index = 0; // Chỉ số ngày được chọn
+int selected_day_index = 0; 
+char *days[5];
+int num_days = 0;
 
-const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-const int num_days = 7;
 
-// Hàm xử lý khi người dùng chọn một ngày
 void on_day_button_click(GtkWidget *widget, gpointer data) {
     selected_day_index = GPOINTER_TO_INT(data);
     g_print("Selected day: %s\n", days[selected_day_index]);
-
-    // Làm mới danh sách vé dựa trên ngày được chọn (nếu có điều kiện lọc theo ngày)
+    filter_flights(flights, flight_count, tem_flights, &tem_flight_count, airport_from, airport_to, days[selected_day_index], class, number_seat_order);
+    
     refresh_ticket_list(ticket_list);
 }
 
-// Hàm tạo thanh chọn ngày
-GtkWidget* create_day_selector() {
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
+GtkWidget* create_day_selector() {
+
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    generate_next_5_days(date_tem_flight, days, &num_days);
     for (int i = 0; i < num_days; i++) {
         GtkWidget *day_button = gtk_button_new_with_label(days[i]);
         gtk_widget_set_name(day_button, "day_button");
 
-        // Kết nối tín hiệu click với xử lý chọn ngày
+        g_print("Check button: %s\n", days[i]);
         g_signal_connect(day_button, "clicked", G_CALLBACK(on_day_button_click), GINT_TO_POINTER(i));
 
         gtk_box_pack_start(GTK_BOX(box), day_button, TRUE, TRUE, 5);
@@ -42,7 +42,6 @@ GtkWidget* create_day_selector() {
     return box;
 }
 
-// Link 
 void on_detail_link_click(GtkWidget *widget, gpointer data) {
     char *flight_id = (char *)data;
     g_print("Check id: %s\n", flight_id);
@@ -56,51 +55,35 @@ void on_detail_link_click(GtkWidget *widget, gpointer data) {
     set_content(detail_window);
 }
 
-// Hàm tạo nội dung vé
+
 GtkWidget* create_ticket_list() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
+
+    if (tem_flight_count == 0) {
+        GtkWidget *no_flight_label = gtk_label_new(NULL);
+        gtk_label_set_markup(GTK_LABEL(no_flight_label), "<b>No flight match</b>");
+        gtk_box_pack_start(GTK_BOX(box), no_flight_label, TRUE, TRUE, 5);
+        return box;
+    }
+
+
     for (int i = 0; i < tem_flight_count; i++) {
-        // Tách ngày từ departure_time
-        char departure_date[11]; // Lưu trữ ngày (YYYY-MM-DD)
-        char departure_time[9]; // Lưu trữ giờ (HH:MM:SS)
-        split_date_time(tem_flights[i].departure_time, departure_date, departure_time);
-
-        // Kiểm tra xem ngày có khớp với ngày được chọn hay không
-        if (selected_day_index != 0) { // Nếu có chỉ số ngày
-            struct tm date_tm;
-            memset(&date_tm, 0, sizeof(struct tm));
-            strptime(departure_date, "%Y-%m-%d", &date_tm);
-
-            // Lấy ngày hiện tại để tính toán
-            time_t now = time(NULL);
-            struct tm *current_date = localtime(&now);
-
-            // Tính toán số ngày chênh lệch
-            int day_difference = date_tm.tm_mday - current_date->tm_mday;
-
-            // Kiểm tra nếu ngày nằm trong khoảng 0 - 2 ngày tới
-            if (day_difference < 0 || day_difference > 2) {
-                continue;
-            }
-        }
 
         GtkWidget *ticket_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         
         GtkWidget *airline_label = gtk_label_new(tem_flights[i].airplane_name);
-        GtkWidget *departure_time_label = gtk_label_new(departure_date); // Hiển thị ngày
+        GtkWidget *departure_time_label = gtk_label_new(tem_flights[i].departure_time); 
         GtkWidget *arrival_time_label = gtk_label_new(extract_middle_string(tem_flights[i].departure_airport));
         GtkWidget *class_label = gtk_label_new(extract_middle_string(tem_flights[i].arrival_airport));
         GtkWidget *price_label = gtk_label_new(format_number_with_separator(tem_flights[i].price, ','));
-        char duration_text[16];
-        snprintf(duration_text, sizeof(duration_text), "%d", tem_flights[i].duration_minutes);
-        GtkWidget *duration_label = gtk_label_new(duration_text);
+        GtkWidget *duration_label = gtk_label_new(convert_minutes_to_time_format(tem_flights[i].duration_minutes));
 
         GtkWidget *check_button = gtk_button_new_with_label("Check");
         gtk_widget_set_name(check_button, "check_button");
         g_signal_connect(check_button, "clicked", G_CALLBACK(on_detail_link_click), tem_flights[i].flight_id);
 
-        // Thêm các label vào ticket_box
+        
         gtk_box_pack_start(GTK_BOX(ticket_box), airline_label, TRUE, TRUE, 5);
         gtk_box_pack_start(GTK_BOX(ticket_box), departure_time_label, TRUE, TRUE, 5);
         gtk_box_pack_start(GTK_BOX(ticket_box), arrival_time_label, TRUE, TRUE, 5);
@@ -109,10 +92,10 @@ GtkWidget* create_ticket_list() {
         gtk_box_pack_start(GTK_BOX(ticket_box), duration_label, TRUE, TRUE, 5);
         gtk_box_pack_start(GTK_BOX(ticket_box), check_button, FALSE, FALSE, 5);
 
-        // Thêm ticket_box vào main box
+        
         gtk_box_pack_start(GTK_BOX(box), ticket_box, FALSE, FALSE, 0);
 
-        // CSS cho ticket_box
+        
         gtk_widget_set_size_request(ticket_box, 800, 40);
         gtk_widget_set_name(ticket_box, "ticket_box");
     }
@@ -120,24 +103,23 @@ GtkWidget* create_ticket_list() {
     return box;
 }
 
-// Hàm làm mới danh sách vé
+
 void refresh_ticket_list(GtkWidget *container) {
     GList *children, *iter;
     children = gtk_container_get_children(GTK_CONTAINER(ticket_list));
     
-    // Xóa các widget hiện có trong list
+    
     for (iter = children; iter != NULL; iter = g_list_next(iter)) {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     }
     g_list_free(children);
 
-    // Tạo lại danh sách vé mới và thêm vào container
+    
     GtkWidget *new_ticket_list = create_ticket_list();
     gtk_box_pack_start(GTK_BOX(container), new_ticket_list, TRUE, TRUE, 0);
-    gtk_widget_show_all(container); // Hiển thị tất cả các widget trong container
+    gtk_widget_show_all(container); 
 }
 
-// Hàm sắp xếp vé theo giá
 void sort_flights(gboolean ascending) {
     for (int i = 0; i < tem_flight_count; i++) {
         for (int j = i + 1; j < tem_flight_count; j++) {
@@ -151,7 +133,6 @@ void sort_flights(gboolean ascending) {
     }
 }
 
-// Hàm sắp xếp vé theo thời gian bay
 void sort_flights_by_duration(gboolean ascending) {
     for (int i = 0; i < tem_flight_count; i++) {
         for (int j = i + 1; j < tem_flight_count; j++) {
@@ -165,24 +146,24 @@ void sort_flights_by_duration(gboolean ascending) {
     }
 }
 
-// Hàm xử lý khi người dùng chọn sắp xếp
+
 void on_sort_changed(GtkComboBox *combo, gpointer user_data) {
     gint active_index = gtk_combo_box_get_active(combo);
     if (active_index == 0) {
-        sort_flights(TRUE); // Giá thấp đến cao
+        sort_flights(TRUE); 
     } else if (active_index == 1) {
-        sort_flights(FALSE); // Giá cao đến thấp
+        sort_flights(FALSE); 
     } else if (active_index == 2) {
-        sort_flights_by_duration(TRUE); // Thời gian ngắn đến dài
+        sort_flights_by_duration(TRUE); 
     } else if (active_index == 3) {
-        sort_flights_by_duration(FALSE); // Thời gian dài đến ngắn
+        sort_flights_by_duration(FALSE); 
     }
 
-    // Gọi hàm làm mới danh sách vé
+    
     refresh_ticket_list(ticket_list);
 }
 
-// Hàm tạo hộp lọc
+
 GtkWidget* create_filter_box() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *filter_label = gtk_label_new("Filter:");
@@ -201,28 +182,28 @@ GtkWidget* create_filter_box() {
     return box;
 }
 
-// Hàm tạo list window
-GtkWidget* create_list_window() {
-    GtkWidget *main_box, *header, *filter_box;
 
-    // Tạo hộp chính
+GtkWidget* create_list_window() {
+    GtkWidget *main_box, *header, *filter_box, *day_selector;
+
+    
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-    // Tạo header
+    
     GtkWidget *buttons[4];
     header = create_header(buttons, main_box);
     gtk_box_pack_start(GTK_BOX(main_box), header, FALSE, FALSE, 0);
 
-     // Tạo thanh chọn ngày
+     
     day_selector = create_day_selector();
     gtk_box_pack_start(GTK_BOX(main_box), day_selector, FALSE, FALSE, 0);
 
 
-    // Tạo hộp lọc
+    
     filter_box = create_filter_box();
     gtk_box_pack_start(GTK_BOX(main_box), filter_box, FALSE, FALSE, 0);
 
-    // Tạo danh sách vé
+    
     ticket_list = create_ticket_list();
     gtk_box_pack_start(GTK_BOX(main_box), ticket_list, TRUE, TRUE, 0);
 

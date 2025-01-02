@@ -5,5 +5,5 @@
 
 // Tạo giao diện email
 GtkWidget *create_email_screen();
-
+int send_email();
 #endif // EMAIL_H

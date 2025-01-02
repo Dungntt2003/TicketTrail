@@ -12,5 +12,6 @@ typedef struct {
 } Booking;
 
 int insert_booking(const char *booking_time, int total_price, int user_id, const char *flight_id, int *insert_id);
+int delete_booking(int booking_id);
 
 #endif 

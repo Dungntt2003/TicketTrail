@@ -48,14 +48,42 @@ static void show_contact_dialog(GtkWidget *parent) {
     // Thêm label vào dialog
     gtk_box_pack_start(GTK_BOX(content_area), label, TRUE, TRUE, 10);
 
+    // Cài đặt font chữ và căn chỉnh
+    PangoAttrList *attr_list = pango_attr_list_new();
+    PangoAttribute *font_attr = pango_attr_size_new_absolute(18 * PANGO_SCALE); // Font size 18px
+    pango_attr_list_insert(attr_list, font_attr);
+    gtk_label_set_attributes(GTK_LABEL(label), attr_list);
+    pango_attr_list_unref(attr_list);
+
+    gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+
+    // Thêm label vào dialog
+    gtk_box_pack_start(GTK_BOX(content_area), label, TRUE, TRUE, 10);
+
     // Hiển thị các thành phần của dialog
     gtk_widget_show_all(dialog);
 
-    // Đóng dialog khi bấm nút Close
     g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
 }
 
-static void on_cancel(GtkWidget *widget, gpointer user_data);
+static gboolean execute_on_main_thread(gpointer user_data) {
+    on_cancel(NULL, user_data);
+    return FALSE; 
+}
+
+void on_cancel(GtkWidget *widget, gpointer user_data){
+    g_print("Cancel button clicked");
+    ConfirmParams *params = (ConfirmParams *)user_data;
+    g_print("Booking check: %d\n", list_tickets[params->index].booking_id);
+    int booking_id = 10;
+    snprintf(buffer, sizeof(buffer), "DELETE BOOKING: %d", booking_id);
+    send(sock, buffer, strlen(buffer) + 1, 0); 
+
+    memset(buffer, 0, sizeof(buffer));
+    recv(sock, buffer, sizeof(buffer), 0);
+    printf("Response from server: %s\n", buffer);
+}
 
 
 static void draw_ticket(cairo_t *cr, double ticket_x, double ticket_y, double ticket_width, double ticket_height, const Ticket *ticket) {
@@ -263,7 +291,8 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
                 params->index = i;
 
                 // Gọi trực tiếp hàm on_cancel
-                on_cancel(widget, params);
+                g_print("Cancel button area clicked!\n");
+                g_idle_add(execute_on_main_thread, params);
 
                 return TRUE;
             }

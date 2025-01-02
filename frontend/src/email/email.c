@@ -2,27 +2,45 @@
 #include <string.h>
 #include <curl/curl.h>
 #include <gtk/gtk.h>
+#include <time.h>
 
 #define SMTP_SERVER "smtp://smtp.gmail.com"
 #define SMTP_PORT "587"
-#define SENDER_EMAIL "nguyenthuydung55555@gmail.com"      // Thay bằng email của bạn
-#define SENDER_PASSWORD "gbtq lhad nhnt wqpx"         // Thay bằng App Password
-#define RECIPIENT_EMAIL "nguyenthuydung55555@gmail.com"          // Email người nhận
+#define SENDER_EMAIL "nguyenthuydung55555@gmail.com"      
+#define SENDER_PASSWORD "jehb zesq ydaa dwso"       
+#define RECIPIENT_EMAIL "nguyenthithuydung17102003@gmail.com"        
 #define EMAIL_SUBJECT "Chúc mừng đặt vé thành công"
 #define EMAIL_BODY "Congratulations on successfully booking your ticket!"
-
+#define TICKET_CODE_LENGTH 5
 struct upload_status {
     size_t bytes_read;
 };
 
+void generate_ticket_code(char *ticket_code, int length) {
+    const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (int i = 0; i < length; i++) {
+        ticket_code[i] = charset[rand() % (sizeof(charset) - 1)];
+    }
+    ticket_code[length] = '\0'; 
+}
+
 static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp) {
     struct upload_status *upload_ctx = (struct upload_status *)userp;
-    const char *data = "To: nguyenthuydung55555@gmail.com\r\n"
-                       "From: TicketTrail <ygchsohcy@gmail.com>\r\n"
-                       "Subject: Test Email\r\n"
-                       "\r\n"
-                       "Chúc mừng đặt vé thành công.\r\n";
+    srand(time(NULL)); 
 
+    char ticket_code[TICKET_CODE_LENGTH + 1];
+    generate_ticket_code(ticket_code, TICKET_CODE_LENGTH);
+
+    char data[512]; 
+
+    snprintf(data, sizeof(data), 
+             "To: nguyenthithuydung17102003@gmail.com\r\n"
+             "From: TicketTrail <ticketrail@gmail.com>\r\n"
+             "Subject: Test Email\r\n"
+             "\r\n"
+             "Chúc mừng đặt vé thành công.\r\n"
+             "Mã đặt vé của bạn là: %s\r\n",
+             ticket_code);
     size_t len = strlen(data);
 
     if (upload_ctx->bytes_read < len) {
@@ -36,10 +54,10 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp) 
         return to_copy;
     }
 
-    return 0; // No more data
+    return 0; 
 }
 
-static int send_email() {
+int send_email() {
     CURL *curl;
     CURLcode res = CURLE_OK;
     struct curl_slist *recipients = NULL;
@@ -60,7 +78,7 @@ static int send_email() {
         curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); // Enable verbose for debugging
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); 
 
         res = curl_easy_perform(curl);
 
@@ -94,12 +112,10 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data
 GtkWidget *create_email_screen() {
     GtkWidget *overlay = gtk_overlay_new();
 
-    // Vẽ nền
     GtkWidget *drawing_area = gtk_drawing_area_new();
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), drawing_area);
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_draw_event), NULL);
 
-    // Thêm nút Email
     GtkWidget *button = gtk_button_new_with_label("Email");
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button);
     gtk_widget_set_size_request(button, 150, 50);

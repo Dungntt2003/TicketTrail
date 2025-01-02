@@ -90,16 +90,16 @@ int main() {
     const char *vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"; // URL thanh toán của VNPAY
     
     // Dữ liệu giao dịch
-    const char *vnp_TxnRef = "11"; // Mã giao dịch
+    const char *vnp_TxnRef = "12"; 
     const char *vnp_Amount = "10000000"; // Số tiền (10000000 VND)
-    const char *vnp_CreateDate = "20241229180200"; // Thời gian tạo giao dịch
+    const char *vnp_CreateDate = "20241230203800"; // Thời gian tạo giao dịch
     const char *vnp_CurrCode = "VND"; // Loại tiền tệ
     const char *vnp_IpAddr = "127.0.0.1"; // Địa chỉ IP
     const char *vnp_Locale = "vn"; // Ngôn ngữ
     const char *vnp_OrderInfo = "Thanhtoan"; // Thông tin đơn hàng
     const char *vnp_OrderType = "other"; // Loại hàng hóa
     const char *vnp_ReturnUrl = "http://localhost:8888/vnpay_return"; // URL trả về
-    const char *vnp_BankCode = "NCB"; // Mã ngân hàng (tuỳ chọn)
+    const char *vnp_BankCode = "NCB"; 
 
     // Mã hóa các tham số cần thiết
     char encoded_OrderInfo[512];

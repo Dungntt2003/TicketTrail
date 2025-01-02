@@ -109,21 +109,24 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
 
     if (event->x >= confirm_button_x && event->x <= confirm_button_x + 156 &&
         event->y >= button_y_payment && event->y <= button_y_payment + 56) {
-        printf("Confirm button clicked!\n");
-        int result = get_list_tickets_ordered();
-        if (result == -1){
-            printf("Error when fetching tickets\n");
-            return false;
-        }
-        else if (result == 0){
-            printf("No tickets found\n");
-            GtkWidget *book_list_window =  create_booklist_window();
-            set_content(book_list_window);
-            return false;
-        }
-        printf("Click navigate to list tickets\n");
-        GtkWidget *book_list_window =  create_booklist_window();
-        set_content(book_list_window);
+        // printf("Confirm button clicked!\n");
+        // int result = get_list_tickets_ordered();
+        // if (result == -1){
+        //     printf("Error when fetching tickets\n");
+        //     return false;
+        // }
+        final_price = discounted_price;
+        vnpay_payment();
+        receive_result_from_vnpay();
+        // else if (result == 0){
+        //     printf("No tickets found\n");
+        //     GtkWidget *book_list_window =  create_booklist_window();
+        //     set_content(book_list_window);
+        //     return false;
+        // }
+        // printf("Click navigate to list tickets\n");
+        // GtkWidget *book_list_window =  create_booklist_window();
+        // set_content(book_list_window);
             return true;
         }
 
