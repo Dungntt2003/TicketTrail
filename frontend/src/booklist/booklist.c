@@ -48,19 +48,6 @@ static void show_contact_dialog(GtkWidget *parent) {
     // Thêm label vào dialog
     gtk_box_pack_start(GTK_BOX(content_area), label, TRUE, TRUE, 10);
 
-    // Cài đặt font chữ và căn chỉnh
-    PangoAttrList *attr_list = pango_attr_list_new();
-    PangoAttribute *font_attr = pango_attr_size_new_absolute(18 * PANGO_SCALE); // Font size 18px
-    pango_attr_list_insert(attr_list, font_attr);
-    gtk_label_set_attributes(GTK_LABEL(label), attr_list);
-    pango_attr_list_unref(attr_list);
-
-    gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
-    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-
-    // Thêm label vào dialog
-    gtk_box_pack_start(GTK_BOX(content_area), label, TRUE, TRUE, 10);
-
     // Hiển thị các thành phần của dialog
     gtk_widget_show_all(dialog);
 
