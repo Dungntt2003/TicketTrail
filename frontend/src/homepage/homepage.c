@@ -31,7 +31,7 @@ void on_list_link_click(GtkWidget *widget, gpointer data) {
     }
     const char *traveller = gtk_entry_get_text(GTK_ENTRY(input_traveller));
     const char *selected_class = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo_box));
-    const char *date_text, *date_return_text;
+    const char *date_text;
     GList *children = gtk_container_get_children(GTK_CONTAINER(input_departure));
     GtkWidget *entry = GTK_WIDGET(g_list_nth_data(children, 0)); 
     const char *from = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(input_from));
@@ -44,18 +44,18 @@ void on_list_link_click(GtkWidget *widget, gpointer data) {
 
     g_list_free(children);
 
-    GList *children1 = gtk_container_get_children(GTK_CONTAINER(input_return));
-    GtkWidget *entry1 = GTK_WIDGET(g_list_nth_data(children1, 0)); 
+    // GList *children1 = gtk_container_get_children(GTK_CONTAINER(input_return));
+    // GtkWidget *entry1 = GTK_WIDGET(g_list_nth_data(children1, 0)); 
 
-    if (GTK_IS_ENTRY(entry1)) {
-        date_return_text = gtk_entry_get_text(GTK_ENTRY(entry1));
-    } else {
-        g_print("No entry found in input_return\n");
-    }
+    // if (GTK_IS_ENTRY(entry1)) {
+    //     date_return_text = gtk_entry_get_text(GTK_ENTRY(entry1));
+    // } else {
+    //     g_print("No entry found in input_return\n");
+    // }
 
-    g_list_free(children1);
+    // g_list_free(children1);
 
-    g_print("%s %s %s %s %s %s\n", from, to, traveller, selected_class, date_text, date_return_text);
+    g_print("%s %s %s %s %s %s\n", from, to, traveller, selected_class, date_text);
     strcpy(date_tem_flight, date_text);
     strcpy(airport_from, from);
     strcpy(airport_to, to);
@@ -319,14 +319,14 @@ GtkWidget* create_selection_box() {
             GtkWidget *label_departure = create_label("Departure");
             input_departure = create_input_box_with_date_picker("Choose Departure Date");
 
-            GtkWidget *label_return = create_label("Return");
-            input_return = create_input_box_with_date_picker("+ Add Return Date (Optional)");
+            // GtkWidget *label_return = create_label("Return");
+            // input_return = create_input_box_with_date_picker("+ Add Return Date (Optional)");
 
             
             gtk_box_pack_start(GTK_BOX(section_box), label_departure, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_departure, FALSE, FALSE, 0);
-            gtk_box_pack_start(GTK_BOX(section_box), label_return, FALSE, FALSE, 0);
-            gtk_box_pack_start(GTK_BOX(section_box), input_return, FALSE, FALSE, 0);
+            // gtk_box_pack_start(GTK_BOX(section_box), label_return, FALSE, FALSE, 0);
+            // gtk_box_pack_start(GTK_BOX(section_box), input_return, FALSE, FALSE, 0);
         }
         else if (i == 2) {
             GtkWidget *label_traveller = create_label("Number people");
