@@ -371,7 +371,7 @@ static gboolean on_booklist_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
                       print_button_y + (button_height + print_text_extents.height) / 2);
         cairo_show_text(cr, "Print ticket out");
 
-        // if (is_valid_date(date) == 0) {
+        if (is_valid_date(date) == 0) {
             
             double cancel_button_y = print_button_y + button_height + 20;
             double cancel_button_x = button_x;
@@ -420,7 +420,7 @@ static gboolean on_booklist_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
             cairo_move_to(cr, change_button_x + (cancel_change_width - change_text_extents.width) / 2,
                         cancel_button_y + (button_height + change_text_extents.height) / 2);
             cairo_show_text(cr, "Change");
-        // }
+        }
         
     }
 

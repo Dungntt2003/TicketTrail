@@ -43,6 +43,12 @@ gboolean on_mouse_click_ticket_detail(GtkWidget *widget, GdkEventButton *event, 
         int bytes_received = recv(sock, buffer, sizeof(buffer), 0);
         if (bytes_received > 0) {
             buffer[bytes_received] = '\0';
+            if (strcmp(buffer, "NOTHING") == 0){
+                g_print("No ordered seats.\n");
+                GtkWidget *book_seat_window = create_book_seat_window();
+                set_content(book_seat_window);
+                return TRUE;
+            }
             sscanf(buffer, "SEAT COUNT: %d", &seat_count); 
         }
         g_print("Start\n");
@@ -53,12 +59,8 @@ gboolean on_mouse_click_ticket_detail(GtkWidget *widget, GdkEventButton *event, 
             return TRUE;
         }
         buffer[bytes_received] = '\0'; 
-
         printf("Received seats string: %s\n", buffer);
-        // if (!(*seats_array)) {
-        //     perror("Memory allocation failed");
-        //     return;
-        // }
+
         char *token = strtok(buffer, ",");
         int i = 0;
         while (token) {

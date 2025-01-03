@@ -235,7 +235,7 @@ void *handle_client(void *client_socket) {
                     }
                     else {
                         printf("No Sent\n");
-                        send(sock,"ID error", strlen("ID error") + 1, 0);
+                        send(sock,"NOTHING", strlen("NOTHING") + 1, 0);
                     }
                 } else {
                     printf("Invalid format\n");
