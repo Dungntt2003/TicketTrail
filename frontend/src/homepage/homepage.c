@@ -259,25 +259,62 @@ GtkWidget* create_selection_box() {
             GtkWidget *label_from = create_label("From");
 
             input_from = gtk_combo_box_text_new(); 
-            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_from), "Please choose a airport");
+            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_from), "Please choose an airport");
             for (int i = 0; i < airport_count; i++) {
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_from), airports[i]);   
             }
             gtk_combo_box_set_active(GTK_COMBO_BOX(input_from), 0); 
+
+            // Tạo và áp dụng CSS cho input_from
+            GtkCssProvider *input_from_provider = gtk_css_provider_new();
+            gtk_css_provider_load_from_data(input_from_provider,
+                "combobox {"
+                "  font-family: 'DM Sans', sans-serif;"
+                "  font-size: 16px;"
+                "  font-weight: 500;"
+                "  letter-spacing: 0.06em;"
+                "  text-align: center;"
+                "  border-radius: 6px;"
+                "  padding: 12px 20px;"
+                "  background-color: white;"
+                "  border: 1px solid #ccc;"
+                "  color: #283841;"
+                "}",          
+                -1, NULL);
+            gtk_style_context_add_provider(gtk_widget_get_style_context(input_from), GTK_STYLE_PROVIDER(input_from_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
             gtk_box_pack_start(GTK_BOX(section_box), label_from, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_from, FALSE, FALSE, 0);
 
-
             GtkWidget *label_to = create_label("To");
             input_to = gtk_combo_box_text_new(); 
-            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_to), "Please choose a airport");
+            gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_to), "Please choose an airport");
             for (int i = 0; i < airport_count; i++) {
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(input_to), airports[i]);   
             }
             gtk_combo_box_set_active(GTK_COMBO_BOX(input_to), 0); 
+
+            // Tạo và áp dụng CSS cho input_to
+            GtkCssProvider *input_to_provider = gtk_css_provider_new();
+            gtk_css_provider_load_from_data(input_to_provider,
+                "combobox {"
+                "  font-family: 'DM Sans', sans-serif;"
+                "  font-size: 16px;"
+                "  font-weight: 500;"
+                "  letter-spacing: 0.06em;"
+                "  text-align: center;"
+                "  border-radius: 6px;"
+                "  padding: 12px 20px;"
+                "  background-color: white;"
+                "  border: 1px solid #ccc;"
+                "  color: #283841;"
+                "}",          
+                -1, NULL);
+            gtk_style_context_add_provider(gtk_widget_get_style_context(input_to), GTK_STYLE_PROVIDER(input_to_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
             gtk_box_pack_start(GTK_BOX(section_box), label_to, FALSE, FALSE, 0);
             gtk_box_pack_start(GTK_BOX(section_box), input_to, FALSE, FALSE, 0);
-        }
+        }        
         else if (i == 1) {
             GtkWidget *label_departure = create_label("Departure");
             input_departure = create_input_box_with_date_picker("Choose Departure Date");
